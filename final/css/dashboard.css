@@ -1,0 +1,38 @@
+/* final/css/dashboard.css - 儀表板頁面專用樣式 */
+
+#content-container {
+    max-width: 1000px;
+    padding: 40px;
+}
+
+.welcome-title {
+    font-size: 2.5rem;
+    font-weight: 900;
+    margin-bottom: 20px;
+}
+
+.user-name {
+    color: var(--primary-accent);
+    border-bottom: 3px solid rgba(108, 92, 231, 0.2);
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+    margin-top: 40px;
+}
+
+.dash-card {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    border: 1px solid #f1f2f6;
+    transition: all 0.3s;
+    text-align: left;
+}
+
+.dash-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}

@@ -1,0 +1,66 @@
+header,footer {
+    text-align: center;
+}
+body{
+    padding-top: 80px;
+}
+#header{
+    position: fixed;
+    left:0;
+    top:0;
+    background-color: #eeeeee;
+    width:100%;
+    border: 1px dotted #94c8b1;
+}
+#wrap{
+    width: 1000px; 
+    margin: 0 auto;
+}
+.list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start; /* 左對齊 */
+    margin: 0 -10px; /* 抵銷 item 的 margin */
+}
+
+.item{
+    background-color: beige;
+    margin: 10px;
+    padding: 15px; 
+    width: 230px; 
+    /* 移除固定 height 或 auto height，flex 預設會等高 */
+    border: 1px solid #ccc;
+    box-sizing: border-box; 
+    transition: all 0.3s ease;
+    display: flex;     /* 使用 flex 佈局確保子元素對齊 */
+    flex-direction: column;
+}
+
+.item:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+    background-color: #fffdec;
+}
+
+.item img{
+    width: 100%;       /* 圖片寬度改為 100% 以適應容器 */
+    height: 140px;     /* 固定圖片高度，維持對齊 */
+    object-fit: contain; /* 確保圖片不變形且不超出 */
+    background: #fff;  /* 增加圖片背景 */
+    border-radius: 4px;
+}
+
+.item h4 {
+    margin: 15px 0 10px 0;
+    font-size: 1.05rem;
+    text-align: center; /* 標題置中 */
+}
+
+.item p {
+    font-size: 0.9rem;
+    color: #444;
+    margin: 0;
+}
+
+
+    

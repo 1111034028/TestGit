@@ -1,0 +1,56 @@
+/* final/css/login.css - 登入頁面專用樣式 */
+
+#content-container {
+    max-width: 500px;
+    padding: 25px;
+}
+
+.login-card {
+    max-width: 340px;
+    margin: 0 auto;
+}
+
+.form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #edeff2;
+    border-radius: 10px;
+    box-sizing: border-box;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+}
+
+.form-group input:focus {
+    border-color: var(--primary-accent);
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.1);
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--primary-gradient);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s, filter 0.2s;
+}
+
+.submit-btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+}

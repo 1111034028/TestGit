@@ -1,0 +1,43 @@
+/* photo.css - 影像處理頁面專用樣式 */
+
+/* 卡片頭部特殊佈局 (圖片預覽區) */
+.card-header {
+    background: #f8f9fa;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    color: #555;
+    font-size: 14px;
+    text-align: left;
+    border-radius: 12px 12px 0 0; /* 配合卡片圓角 */
+}
+
+.card-header img {
+    margin: 20px auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    display: block;
+    max-width: 100%;
+    height: auto;
+    /* 可調色外框 (圖片) */
+    border: 5px solid #fff; 
+}
+
+/* 參數顯示區塊 */
+.photo-params {
+    text-align: center;
+    font-size: 1.25em; /* 字體變大 */
+    font-weight: bold;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    
+    /* 新增外框 (可做調色) */
+    border: 3px dashed #6fbb9a; /* 範例顏色 */
+    color: #333;
+    line-height: 1.6;
+}
+
+.card-body {
+    padding: 20px;
+}

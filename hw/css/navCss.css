@@ -1,0 +1,104 @@
+#logo{
+    width:80px;
+    margin-left: 2px;
+    float:left;
+}
+#logoimg{
+    width: 70px;
+    height: 70px;
+}
+nav{
+    float: left;
+    margin: 15px 30px;
+    text-align: center;
+    font-size: 18px;
+}
+/*導覽樣式設定*/
+.menu li {
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    color: #555;
+    font-size: 16px;
+    transition: transform 0.2s, box-shadow 0.2s;
+
+    list-style-type: none;
+    display: inline-block;
+    width: 180px;
+    margin: 0 10px;
+}
+.menu a {
+    display: block;
+    padding: 10px;
+    background: #6fbb9a;
+    border-radius: 8px;
+    color: #fff;
+    text-decoration: none;
+}
+.menu a:hover {
+    background: #90ddbb;
+}
+/*連結顏色設定*/
+a {
+    color: #df4839;
+}
+a:hover {
+    color: #ff705b;
+    text-decoration: none;
+}
+
+ul{
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+.menu{
+    font-family: '標楷體';
+    font-size: 20px;
+}
+.menu > li { 
+    float: left;
+}
+.menu li{
+    position: relative;
+    padding: 0px;
+    border: 0px;
+    margin: 0px 10px;
+    min-width: 140px;
+}
+.menu ul{
+    position: absolute;
+    z-index: 10;
+    top: 100%;
+    display: none;
+}
+.menu ul li >ul{
+    z-index: 20;
+    top: 5%;
+    left: 95%;
+}
+
+.menu a {
+    display: block;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    background-image: url(../img/btn1.jpg);
+    background-size: cover;
+    color: black;
+    font-weight: bold;
+    text-shadow: 0 0 5px #ffffff, 0 0 10px #ffffff;
+    border-left: 5px solid transparent;
+    transition: all 0.3s ease;
+}
+.menu a:hover{
+    background-image: url(../img/btn2.jpg);
+    background-size: cover;
+    color: rgb(255, 255, 255);
+    text-shadow: 0 0 30px #98009e, 0 0 35px #98009e;
+    transform: translateX(5px);
+    border-left: 5px solid #af1010;
+}
+.menu li:hover>ul{
+    display: block;
+}
