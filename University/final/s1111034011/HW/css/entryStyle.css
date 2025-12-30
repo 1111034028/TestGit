@@ -1,0 +1,103 @@
+@charset "utf-8";
+/*視窗背景色設定*/
+body {
+    background-color: #E1F5FE;
+    margin: 0px;
+    padding:0px;
+    padding-top: 100px;
+}
+/*連結顏色設定*/
+a {
+color: #df4839;
+}
+a:hover {
+color: #ff705b;
+text-decoration: none;
+}
+/*頁首,導航,頁尾的共通設定*/
+header,nav,footer {
+text-align: center;
+}
+/*頁面標題設定*/
+h1 {
+    width: 300px;
+    margin: 40px auto;
+    padding: 30px;
+    border: 5px solid #95dbbd;
+    background-color: #6fbb9a;
+    color: #fff;
+    font-size: 300%;
+    text-align: center;
+    line-height: 1;
+    border-radius: 50%;
+    text-shadow: 1px 1px 2px #307657;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    background-image: linear-gradient(to bottom, #6fbb9a, #4a9d79);
+    font-family: 'Limelight', cursive;
+    }
+    /*內容區塊邊框設定*/
+    #contents {
+    width: 798px;
+    margin: 40px auto;
+    padding: 40px 80px;
+    border: 1px solid #f6bb9a;
+    background-color: #fff;
+    }
+.entryTable{
+    width:100%;
+    margin-bottom: 30px;
+    border: 2px solid #f6bb9e;
+    border-collapse: collapse;
+}
+.entryTable th, .entryTable td{
+    padding: 10px 20px;
+    border: 1px solid #f6bb9e;
+}
+.entryTable th{
+    width: 10em;
+    background-color: #ffeeee;
+    text-align: left;
+}
+.entryTable caption{
+    margin-bottom: 10px;
+}
+.entryTable input[type="text"],
+.entryTable input[type="email"],
+.entryTable textarea{
+    width:100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    font-size: 1em;
+}
+.entryTable input[type="text"]:focus,
+.entryTable input[type="email"]:focus,
+.entryTable textarea:focus{
+    background-color: #ffffee;
+    outline: none;
+    border-left: 5px solid #ffa700;
+}
+label,input,textarea,select{
+    cursor: pointer;
+}
+.entryBtns{
+    text-align: center;
+}
+/*.entryBtns input{
+    width: 100px;
+}*/
+.entryBtns input{
+    width: 200px;
+    margin: 0 10px;
+    padding: 10px;
+    font-size: 1em;
+    background: #fff;
+    border: 2px solid #f6bb9e;
+    border-radius: 10px;
+}
+.entryBtns input[type="submit"]{
+    background: #fadccc;
+}
+.entryBtns input:hover{
+    opacity: 0.7;
+}

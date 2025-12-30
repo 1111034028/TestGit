@@ -1,0 +1,37 @@
+@charset "utf-8";
+body{
+    background-color: #E1F5FE;
+    margin: 0px;
+    padding:0px;
+    padding-top: 100px;
+}
+#header{
+    position: fixed;
+    left: 0;
+    top: 0;
+    background-color: #B3E5FC;
+    width: 100%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    border: 1px dotted #E1F5FE;
+    z-index: 50;
+}
+
+.clearheader::after{
+    content: "";
+    display: block;
+    clear: both;
+}
+
+#contents{
+    width: 798px;
+    margin: 40px auto;
+    padding: 40px 80px;
+    border: 1px solid #f6bb9e;
+    background-color: #fff;
+    text-align: center;
+}
+
+#footer{
+    text-align: center;
+    clear: both;
+}
