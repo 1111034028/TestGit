@@ -1,0 +1,224 @@
+/* final/css/music.css - 音樂串流應用程式專用樣式 (Dark Mode) */
+
+:root {
+    --bg-dark: #121212;
+    --bg-card: #181818;
+    --bg-hover: #282828;
+    --text-primary: #ffffff;
+    --text-secondary: #b3b3b3;
+    --accent-color: #1db954; /* Green like Spotify */
+    --accent-hover: #1ed760;
+    --border-color: #333;
+}
+
+body {
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: 'Circular', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+/* 覆蓋 common.css 的一些設定 */
+#content-container {
+    background: var(--bg-card);
+    border: none;
+    color: var(--text-primary);
+    max-width: 1200px;
+    width: 95%;
+    padding: 40px;
+    box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+    #content-container {
+        padding: 20px;
+    }
+}
+
+h1, h2, h3 {
+    color: var(--text-primary);
+}
+
+/* 按鈕樣式 */
+.btn-primary {
+    background-color: var(--accent-color);
+    color: black;
+    border: none;
+    border-radius: 500px;
+    padding: 12px 32px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: transform 0.1s, background-color 0.1s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-hover);
+    transform: scale(1.02);
+    color: black;
+}
+
+.btn-secondary {
+    background-color: transparent;
+    border: 1px solid #727272;
+    color: var(--text-primary);
+    border-radius: 500px;
+    padding: 8px 24px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    margin-left: 10px;
+}
+
+.btn-secondary:hover {
+    border-color: var(--text-primary);
+    transform: scale(1.02);
+}
+
+/* 表單樣式 (Dark) */
+.music-form input, .music-form select {
+    background-color: #333;
+    border: 1px solid transparent;
+    color: white;
+    padding: 10px;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 15px;
+}
+
+.music-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+/* 歌曲列表 (More compact) */
+.song-list {
+    display: grid;
+    /* Reduced min-width to 140px to fit more per row */
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 16px;
+    padding: 20px 0;
+}
+
+.song-card {
+    background: var(--bg-card);
+    padding: 12px; /* Reduced padding */
+    border-radius: 8px;
+    transition: background-color 0.3s;
+    position: relative;
+    cursor: pointer;
+}
+
+.song-card:hover {
+    background-color: var(--bg-hover);
+}
+
+.song-cover {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    margin-bottom: 10px; /* Reduced margin */
+}
+
+.song-title {
+    font-weight: 700;
+    font-size: 0.9rem; /* Smaller title */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 2px;
+}
+
+.song-artist {
+    color: var(--text-secondary);
+    font-size: 0.8rem; /* Smaller artist text */
+}
+
+/* Dashboard Table */
+.dashboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.dashboard-table th, .dashboard-table td {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.dashboard-table th {
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+}
+
+.dashboard-table tr:hover {
+    background-color: var(--bg-hover);
+}
+
+/* Nav Button Style */
+.nav-btn-return {
+    border: 1px solid #6c5ce7; /* Purple to match logo */
+    padding: 6px 18px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    transition: all 0.3s;
+    color: #6c5ce7 !important;
+    background: transparent;
+}
+
+.nav-btn-return:hover {
+    background: #6c5ce7;
+    border-color: #6c5ce7;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+}
+
+/* Green Nav Button Style */
+.nav-btn-green {
+    border: 1px solid #1db954;
+    padding: 6px 18px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    transition: all 0.3s;
+    color: #15883e !important; /* Slightly darker green for text readability on light bg */
+    background: transparent;
+}
+
+.nav-btn-green:hover {
+    background: #1db954;
+    border-color: #1db954;
+    color: black !important; /* Black text as seen in reference image */
+    box-shadow: 0 4px 15px rgba(29, 185, 84, 0.3);
+    box-shadow: 0 4px 15px rgba(29, 185, 84, 0.3);
+}
+
+/* Red Nav Button Style (Logout) */
+.nav-btn-red {
+    border: 1px solid #ff4757; /* Bright red */
+    padding: 6px 18px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    transition: all 0.3s;
+    color: #ff4757 !important;
+    background: transparent;
+}
+
+.nav-btn-red:hover {
+    background: #ff4757;
+    border-color: #ff4757;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+}

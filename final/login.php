@@ -25,8 +25,11 @@ if ($username != "" && $password != "") {
     $result = mysqli_query($link, $sql);
     
     if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
         $_SESSION["login_session"] = true;
         $_SESSION["username"] = $username;
+        $_SESSION["sno"] = $row['sno']; 
+        $_SESSION["picture"] = $row['picture']; // Store avatar path (filename)
         header("Location: index.php"); 
         exit;
     } else {
@@ -44,12 +47,13 @@ if ($username != "" && $password != "") {
     <title>Final Project - Login</title>
     <!-- 引用本地獨立樣式表 -->
     <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/music.css">
     <link rel="stylesheet" href="css/login.css">
 </head>
-<body>
-    <?php include "nav.php"; ?>
+<body class="login-body">
+    <!-- Nav removed for App Shell integration -->
 
-    <div id="content-container">
+    <div class="login-container">
         <h1 style="text-align:center;">登入</h1>
         <div class="login-card">
             <?php if ($error_msg): ?>
@@ -74,7 +78,7 @@ if ($username != "" && $password != "") {
             
             <div style="text-align: center; margin-top: 25px;">
                 <p style="color: var(--text-muted); font-size: 0.9rem;">
-                    尚未在系統註冊？ <a href="../hw/getForm.php" style="color: var(--primary-accent); font-weight:700;">建立帳戶</a>
+                    尚未在系統註冊？ <a href="register.php" style="color: var(--primary-accent); font-weight:700;">建立帳戶</a>
                 </p>
             </div>
         </div>
