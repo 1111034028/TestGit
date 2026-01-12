@@ -67,5 +67,20 @@ INSERT INTO `sdgs` (`sdg`, `img`, `title`, `detail`) VALUES
 (16, '16.jpg', 'SDG 16 和平、正義及健全制度', '促進和平多元的社會，確保司法平等，建立具公信力且廣納民意的體系'),
 (17, '17.jpg', 'SDG 17 多元夥伴關係', '建立多元夥伴關係，協力促進永續願景');
 
+-- --------------------------------------------------------
+
+--
+-- 資料表結構 `album`
+--
+
+CREATE TABLE IF NOT EXISTS `album` (
+  `album_id` int(11) NOT NULL AUTO_INCREMENT,
+  `album_date` datetime DEFAULT NULL,
+  `location` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `title` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `picurl` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  PRIMARY KEY (`album_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 
 

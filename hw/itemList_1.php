@@ -1,3 +1,4 @@
+<?php require_once('../final/auth_check.php'); ?>
 <!DOCTYPE html>
 <html lang="zh-TW">
 
@@ -24,7 +25,7 @@
         <!-- 功能列表 -->
         <header id="header" class="clearheader">
             <?php
-            include "nav.html";
+            include "nav.php";
             ?>
         </header>
 

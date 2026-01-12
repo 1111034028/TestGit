@@ -1,4 +1,5 @@
 <?php
+    require_once('../final/auth_check.php');
     if(isset($_POST['gray']) && isset($_POST["sepia"])){
         $photoFile = $_FILES["photo"]["name"];
         $photoBright = $_POST["bright"] . "%";
@@ -39,7 +40,7 @@
     <div id="wrap">
         <header id="header" class="clearheader">
             <?php
-            require "nav.html";
+            require "nav.php";
             ?>
         </header>
         

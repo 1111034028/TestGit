@@ -99,7 +99,8 @@ h2 {
     border-radius: 8px;
 }
 
-/* 通用表格樣式 */
+/* 通用表格樣式 (已註解，避免與各頁面衝突) */
+/*
 table {
     margin: 0 auto;
     border-collapse: separate;
@@ -120,14 +121,15 @@ th {
 td {
     text-align: left;
 }
+*/
 
-/* 通用表單樣式 */
+/* 通用表單樣式 (已註解) */
+/*
 form {
     display: inline-block;
     width: 100%;
 }
 
-/* 通用輸入框樣式 */
 input[type="text"],
 input[type="date"],
 input[type="amount"],
@@ -141,7 +143,7 @@ input[type="file"]
     font-size: 15px;
     transition: border-color 0.3s, box-shadow 0.3s;
     outline: none;
-    width: 200px; /* 預設寬度 */
+    width: 200px;
     max-width: 90%;
 }
 
@@ -154,7 +156,6 @@ input:focus {
     box-shadow: 0 0 5px rgba(111, 187, 154, 0.5);
 }
 
-/* 通用按鈕樣式 */
 input[type="submit"] {
     background-color: #6fbb9a;
     color: white;
@@ -178,6 +179,7 @@ input[type="submit"]:active {
     transform: translateY(2px);
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+*/
 
 /* 通用文字對齊 */
 .text-right, .num {
@@ -202,4 +204,10 @@ div.welcome {
     color: #2e7d32;
     background-color: #e8f5e9;
     border: 1px solid #c8e6c9;
+}
+
+/* 寬版內容容器 (用於通訊錄管理) */
+#contents.wide-content {
+    width: 95%;
+    max-width: 1200px;
 }

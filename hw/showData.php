@@ -1,3 +1,4 @@
+<?php require_once('../final/auth_check.php'); ?>
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -11,7 +12,7 @@
 <body>
     <div id="wrap">
         <header id="header" class="clearheader">
-            <?php require "nav.html"; ?>
+            <?php require "nav.php"; ?>
         </header>
 
         <main id="form-contents">

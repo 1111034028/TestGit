@@ -30,3 +30,21 @@
         </li>
     </ui>
 </nav>
+
+<!-- 使用者功能區 (靠右) - 使用 PHP 直接渲染，不使用 ul/li，自行定義樣式 -->
+<div style="float: right; margin: 25px 30px; font-family: 'Microsoft JhengHei', sans-serif;">
+    <?php
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+    
+    if(isset($_SESSION["login_session"]) && $_SESSION["login_session"] === true) {
+        // 已登入：顯示 "登出 (使用者名稱)" 純文字連結
+        // 樣式參考：紅色文字 (#d63031)，無底色，無按鈕外觀
+        echo '<a href="../final/logout.php" style="color: #d63031; text-decoration: none; font-weight: bold; font-size: 16px;">登出 (' . htmlspecialchars($_SESSION["username"]) . ')</a>';
+    } else {
+        // 未登入
+        echo '<a href="../final/login.php" style="color: #0984e3; text-decoration: none; font-weight: bold; font-size: 16px;">登入</a>';
+    }
+    ?>
+</div>

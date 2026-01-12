@@ -2,10 +2,7 @@
 session_start(); // 啟用交談期
 
 // 權限檢查
-if (!isset($_SESSION["login_session"]) || $_SESSION["login_session"] !== true) {
-    header("Location: login.php");
-    exit;
-}
+require_once("auth_check.php");
 ?>
 
 <!DOCTYPE html>

@@ -10,7 +10,7 @@
 <body>
     <div id="wrap">
         <header id="header" class="clearheader">
-            <?php require "nav.html"; ?>
+            <?php require "nav.php"; ?>
         </header>
 
         <main id="contents">
