@@ -18,7 +18,11 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- 資料庫： `finaldb`
+-- 資料庫： `mydb`
+CREATE DATABASE IF NOT EXISTS `mydb` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE `mydb`;
+
+SET FOREIGN_KEY_CHECKS=0;
 --
 
 
@@ -28,6 +32,7 @@ SET time_zone = "+00:00";
 -- 資料表結構 `students`
 --
 
+DROP TABLE IF EXISTS `students`;
 CREATE TABLE `students` (
   `sno` char(4) NOT NULL COMMENT '學號',
   `name` varchar(10) NOT NULL COMMENT '姓名',
@@ -36,7 +41,8 @@ CREATE TABLE `students` (
   `username` char(10) NOT NULL COMMENT '帳號',
   `password` char(10) NOT NULL COMMENT '密碼',
   `role` varchar(10) NOT NULL DEFAULT 'user',
-  `picture` varchar(255) DEFAULT NULL COMMENT '頭像路徑'
+  `picture` varchar(255) DEFAULT NULL COMMENT '頭像路徑',
+  PRIMARY KEY (`sno`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
@@ -56,11 +62,7 @@ INSERT INTO `students` (`sno`, `name`, `address`, `birthday`, `username`, `passw
 -- 已傾印資料表的索引
 --
 
---
--- 資料表索引 `students`
---
-ALTER TABLE `students`
-  ADD PRIMARY KEY (`sno`);
+
 
 -- --------------------------------------------------------
 
@@ -68,12 +70,14 @@ ALTER TABLE `students`
 -- 資料表結構 `album`
 --
 
+DROP TABLE IF EXISTS `album`;
 CREATE TABLE `album` (
   `album_id` int(11) NOT NULL,
   `album_date` datetime DEFAULT NULL,
   `location` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `title` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  `picurl` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL
+  `picurl` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  PRIMARY KEY (`album_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -100,11 +104,14 @@ INSERT INTO `album` (`album_id`, `album_date`, `location`, `title`, `picurl`) VA
 -- 資料表結構 `playlists`
 --
 
+DROP TABLE IF EXISTS `playlists`;
 CREATE TABLE `playlists` (
   `id` int(11) NOT NULL,
   `user_id` char(4) NOT NULL COMMENT '使用者ID (students.sno)',
   `name` varchar(100) NOT NULL COMMENT '歌單名稱',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
@@ -121,11 +128,15 @@ INSERT INTO `playlists` (`id`, `user_id`, `name`, `created_at`) VALUES
 -- 資料表結構 `playlist_songs`
 --
 
+DROP TABLE IF EXISTS `playlist_songs`;
 CREATE TABLE `playlist_songs` (
   `id` int(11) NOT NULL,
   `playlist_id` int(11) NOT NULL,
   `song_id` int(11) NOT NULL,
-  `sort_order` int(11) NOT NULL DEFAULT 0
+  `sort_order` int(11) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `playlist_id` (`playlist_id`),
+  KEY `song_id` (`song_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
@@ -142,11 +153,13 @@ INSERT INTO `playlist_songs` (`id`, `playlist_id`, `song_id`, `sort_order`) VALU
 -- 資料表結構 `sdgs`
 --
 
+DROP TABLE IF EXISTS `sdgs`;
 CREATE TABLE `sdgs` (
   `sdg` int(2) NOT NULL COMMENT '編號',
   `img` char(30) NOT NULL COMMENT '圖片檔名',
   `title` varchar(100) NOT NULL COMMENT '標題',
-  `detail` varchar(300) NOT NULL COMMENT '詳細說明'
+  `detail` varchar(300) NOT NULL COMMENT '詳細說明',
+  PRIMARY KEY (`sdg`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
@@ -178,6 +191,7 @@ INSERT INTO `sdgs` (`sdg`, `img`, `title`, `detail`) VALUES
 -- 資料表結構 `songs`
 --
 
+DROP TABLE IF EXISTS `songs`;
 CREATE TABLE `songs` (
   `id` int(11) NOT NULL,
   `title` varchar(255) NOT NULL,
@@ -188,7 +202,8 @@ CREATE TABLE `songs` (
   `play_count` int(11) DEFAULT 0,
   `genre` varchar(50) DEFAULT NULL,
   `cover_image` longblob DEFAULT NULL,
-  `cover_type` varchar(50) DEFAULT NULL
+  `cover_type` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -207,44 +222,21 @@ INSERT INTO `songs` (`id`, `title`, `artist`, `file_path`, `uploader_id`, `uploa
 -- 已傾印資料表的索引
 --
 
---
--- 資料表索引 `album`
---
-ALTER TABLE `album`
-  ADD PRIMARY KEY (`album_id`);
 
---
--- 資料表索引 `playlists`
---
-ALTER TABLE `playlists`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`);
 
---
--- 資料表索引 `playlist_songs`
---
-ALTER TABLE `playlist_songs`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `playlist_id` (`playlist_id`),
-  ADD KEY `song_id` (`song_id`);
 
---
--- 資料表索引 `sdgs`
---
-ALTER TABLE `sdgs`
-  ADD PRIMARY KEY (`sdg`);
 
---
--- 資料表索引 `songs`
---
-ALTER TABLE `songs`
-  ADD PRIMARY KEY (`id`);
 
---
--- 資料表索引 `students`
---
-ALTER TABLE `students`
-  ADD PRIMARY KEY (`sno`);
+
+
+
+
+
+-- --
+-- -- 資料表索引 `students`
+-- --
+-- ALTER TABLE `students`
+--   ADD PRIMARY KEY (`sno`);
 
 --
 -- 在傾印的資料表使用自動遞增(AUTO_INCREMENT)
@@ -290,6 +282,7 @@ ALTER TABLE `playlists`
 ALTER TABLE `playlist_songs`
   ADD CONSTRAINT `playlist_songs_ibfk_1` FOREIGN KEY (`playlist_id`) REFERENCES `playlists` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `playlist_songs_ibfk_2` FOREIGN KEY (`song_id`) REFERENCES `songs` (`id`) ON DELETE CASCADE;
+SET FOREIGN_KEY_CHECKS=1;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

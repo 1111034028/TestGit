@@ -3,7 +3,7 @@
 $link = @mysqli_connect("localhost", "root", "") 
         or die("資料庫連線失敗，請檢查 XAMPP 是否開啟！<br/>");
 
-mysqli_select_db($link, "finaldb");
+mysqli_select_db($link, "mydb");
 mysqli_set_charset($link, "utf8mb4");
 
 /**
