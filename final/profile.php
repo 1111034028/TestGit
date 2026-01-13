@@ -1,9 +1,5 @@
 <?php
-session_start();
-if (!isset($_SESSION["login_session"]) || $_SESSION["login_session"] !== true) {
-    header("Location: login.php");
-    exit;
-}
+require_once("inc/auth_guard.php");
 
 require_once("../DB/DB_open.php");
 
@@ -12,18 +8,17 @@ $sql = "SELECT * FROM students WHERE username = '$username'";
 $result = mysqli_query($link, $sql);
 $row = mysqli_fetch_assoc($result);
 
-// Prevent XSS
+// 防止 XSS
 $name = htmlspecialchars($row['name']);
 $address = htmlspecialchars($row['address']);
 $birthday = htmlspecialchars($row['birthday']);
 $password = htmlspecialchars($row['password']);
 $sno = htmlspecialchars($row['sno']);
 ?>
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="utf-8" />
-    <title>個人資料 - 音樂串流平台</title>
+<?php
+$page_title = "個人資料 - 音樂串流平台";
+require_once("inc/header.php");
+?>
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/music.css">
     <style>
@@ -65,7 +60,7 @@ $sno = htmlspecialchars($row['sno']);
     </style>
 </head>
 <body>
-    <!-- Nav removed for App Shell integration -->
+    <!-- 為 App Shell 移除導覽列 -->
 
     <div id="content-container" style="padding-top: 20px;">
         <h1 style="text-align: center; margin-bottom: 30px;">個人資料設定</h1>
@@ -132,13 +127,13 @@ $sno = htmlspecialchars($row['sno']);
             if (input.files && input.files[0]) {
                 var reader = new FileReader();
                 reader.onload = function(e) {
-                    // Use ID for robust selection
+                    // 使用 ID 進行穩健選擇
                     const container = document.getElementById('avatar-preview-container');
                     
-                    // Check if img exists inside
+                    // 檢查內部是否存在 img
                     let img = container.querySelector('img');
                     if (!img) {
-                        // If showing initials (text), clear it and add img
+                        // 如果顯示初始文字，清除它並加入 img
                         container.innerHTML = '';
                         img = document.createElement('img');
                         img.style.width = '100%';

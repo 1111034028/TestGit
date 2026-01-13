@@ -4,11 +4,27 @@ require_once("../DB/DB_open.php");
 
 $keyword = "";
 $search_result = null;
+$total_records = 0;
+$total_pages = 0;
+$page = 1;
+$limit = 5;
 
 if (isset($_GET["keyword"])) {
     $keyword = $_GET["keyword"];
     if ($keyword != "") {
-        $sql = "SELECT * FROM students WHERE name LIKE '%$keyword%' OR address LIKE '%$keyword%' OR sno LIKE '%$keyword%'";
+        // 分頁設定
+        if (isset($_GET["page"])) { $page  = $_GET["page"]; } else { $page=1; };  
+        $start_from = ($page-1) * $limit;  
+
+        // 查詢總筆數
+        $sql_count = "SELECT COUNT(*) FROM students WHERE name LIKE '%$keyword%' OR address LIKE '%$keyword%' OR sno LIKE '%$keyword%'";
+        $rs_result = mysqli_query($link, $sql_count);  
+        $row_count = mysqli_fetch_row($rs_result);  
+        $total_records = $row_count[0];  
+        $total_pages = ceil($total_records / $limit); 
+
+        // 查詢資料 (含分頁)
+        $sql = "SELECT * FROM students WHERE name LIKE '%$keyword%' OR address LIKE '%$keyword%' OR sno LIKE '%$keyword%' LIMIT $start_from, $limit";
         $search_result = mysqli_query($link, $sql);
     }
 }
@@ -40,7 +56,7 @@ if (isset($_GET["keyword"])) {
 
             <?php if ($search_result): ?>
                 <div style="margin-bottom: 20px; color: #888;">
-                    搜尋結果: <?php echo mysqli_num_rows($search_result); ?> 筆
+                    搜尋結果: <?php echo $total_records; ?> 筆
                 </div>
                 
                 <table>
@@ -80,6 +96,34 @@ if (isset($_GET["keyword"])) {
                     ?>
                     </tbody>
                 </table>
+
+                <!-- 分頁導覽 -->
+                <?php if ($total_pages > 1): ?>
+                <div class="pagination">
+                    <?php 
+                    $params = "keyword=" . urlencode($keyword);
+                    
+                    // 最前頁
+                    if($page > 1){
+                        echo "<a href='search.php?$params&page=1'>最前頁</a>";
+                        echo "<a href='search.php?$params&page=".($page-1)."'>上一頁</a>";
+                    }
+                    
+                    // 數字頁碼
+                    for ($i=1; $i<=$total_pages; $i++) {
+                        $active = ($i == $page) ? "active" : "";
+                        echo "<a href='search.php?$params&page=".$i."' class='".$active."'>".$i."</a>"; 
+                    }
+
+                    // 最後頁
+                    if($page < $total_pages){
+                        echo "<a href='search.php?$params&page=".($page+1)."'>下一頁</a>";
+                        echo "<a href='search.php?$params&page=".$total_pages."'>最後頁</a>";
+                    }
+                    ?>
+                </div>
+                <?php endif; ?>
+
             <?php endif; ?>
 
             <div class="footer-links" style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">

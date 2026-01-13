@@ -222,23 +222,6 @@ INSERT INTO `songs` (`id`, `title`, `artist`, `file_path`, `uploader_id`, `uploa
 -- 已傾印資料表的索引
 --
 
-
-
-
-
-
-
-
-
-
-
--- --
--- -- 資料表索引 `students`
--- --
--- ALTER TABLE `students`
---   ADD PRIMARY KEY (`sno`);
-
---
 -- 在傾印的資料表使用自動遞增(AUTO_INCREMENT)
 --
 

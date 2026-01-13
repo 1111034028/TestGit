@@ -1,152 +1,72 @@
-/* 註冊頁面重設計: Premium Modern 風格 */
-
-:root {
-    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --card-bg: rgba(255, 255, 255, 0.95);
-    --input-focus: #764ba2;
-    --text-main: #2d3436;
-    --text-muted: #636e72;
-    --shadow-soft: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
-/* 本頁面專用主容器微調 */
-#contents {
-    padding: 60px 20px;
-    background: transparent;
-}
-
-
-
-/* 註冊卡片 */
-.container {
-    max-width: 550px;
-    margin: 0 auto;
-    background: var(--card-bg);
-    padding: 40px;
-    border-radius: 20px;
-    box-shadow: var(--shadow-soft);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-}
+/* hw/css/getForm.css - 註冊表單專用樣式 */
 
 .form-box {
-    text-align: left; /* 改為左對齊更專業 */
+    text-align: left;
+    max-width: 500px;
+    margin: 0 auto;
 }
 
 .form-group {
-    margin-bottom: 22px;
+    margin-bottom: 20px;
 }
 
 .form-group label {
     display: block;
-    font-weight: 600;
     margin-bottom: 8px;
-    color: var(--text-main);
-    font-size: 0.95rem;
+    font-weight: bold;
+    color: #00695c;
 }
 
 .form-group input {
     width: 100%;
-    padding: 12px 16px;
-    font-size: 1rem;
-    border: 2px solid #edeff2;
-    border-radius: 12px;
+    padding: 12px;
+    border: 2px solid #e0f2f1;
+    border-radius: 8px;
+    font-size: 16px;
     transition: all 0.3s ease;
-    box-sizing: border-box; /* 確保寬度包含 padding */
-    outline: none;
+    box-sizing: border-box; /* 確保 padding 不影響寬度 */
 }
 
 .form-group input:focus {
-    border-color: var(--input-focus);
-    box-shadow: 0 0 0 4px rgba(118, 75, 162, 0.1);
+    border-color: #6fbb9a;
+    box-shadow: 0 0 8px rgba(111, 187, 154, 0.3);
+    outline: none;
 }
 
-/* 提交按鈕 */
+/* 註冊按鈕樣式 - 匹配之前設計的 btn-submit 風格 */
 .submit-btn {
     width: 100%;
-    padding: 14px;
-    margin-top: 15px;
-    border: none;
-    border-radius: 12px;
-    background: var(--primary-gradient);
+    padding: 15px;
+    background: linear-gradient(135deg, #66bb6a 0%, #43a047 100%);
     color: white;
-    font-size: 1.1rem;
-    font-weight: 700;
+    border: none;
+    border-radius: 50px;
+    font-size: 18px;
+    font-weight: bold;
     cursor: pointer;
-    transition: all 0.3s transform ease;
-    box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(67, 160, 71, 0.3);
+    margin-top: 10px;
+    margin-bottom: 20px;
 }
 
 .submit-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(118, 75, 162, 0.4);
-    filter: brightness(1.1);
+    background: linear-gradient(135deg, #81c784 0%, #4caf50 100%);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 20px rgba(67, 160, 71, 0.4);
 }
 
 .submit-btn:active {
-    transform: translateY(0);
-}
-
-/* 註冊結果 (getData.php) */
-.message-box {
-    text-align: center;
-}
-
-.success-badge {
-    background: #d4edda;
-    color: #155724;
-    padding: 15px 25px;
-    border-radius: 50px;
-    display: inline-block;
-    margin-bottom: 30px;
-    font-weight: bold;
-}
-
-.assigned-sno {
-    font-size: 3.5rem;
-    font-weight: 900;
-    color: var(--input-focus);
-    margin: 20px 0;
-    display: block;
-}
-
-.data-row {
-    background: #f8f9fa;
-    padding: 12px 20px;
-    border-radius: 10px;
-    margin-bottom: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.data-label {
-    color: var(--text-muted);
-    font-weight: 600;
-}
-
-.data-value {
-    color: var(--text-main);
-    font-weight: 700;
+    transform: translateY(1px);
 }
 
 .back-link {
-    display: inline-block;
-    margin-top: 30px;
-    color: var(--text-muted);
+    color: #7f8c8d;
     text-decoration: none;
-    font-size: 0.9rem;
+    font-size: 14px;
     transition: color 0.3s;
 }
 
 .back-link:hover {
-    color: var(--input-focus);
-    text-decoration: underline;
-}
-
-.error-title {
-    color: #e84393;
-    font-size: 2rem;
-    font-weight: 800;
-    margin-bottom: 20px;
+    color: #6c5ce7;
 }

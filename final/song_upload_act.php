@@ -1,13 +1,8 @@
 <?php
-session_start();
+require_once("inc/auth_guard.php");
 require_once("../DB/DB_open.php");
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // 檢查登入
-    if (!isset($_SESSION["login_session"]) || $_SESSION["login_session"] !== true) {
-        header("Location: login.php");
-        exit;
-    }
 
     $title = mysqli_real_escape_string($link, $_POST["title"]);
     $artist = mysqli_real_escape_string($link, $_POST["artist"]);

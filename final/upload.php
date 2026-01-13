@@ -1,19 +1,9 @@
 <?php
-session_start();
-if (!isset($_SESSION["login_session"]) || $_SESSION["login_session"] !== true) {
-    header("Location: login.php");
-    exit;
-}
+require_once("inc/auth_guard.php");
+
+$page_title = "上傳歌曲 - 創作者工作室";
+require_once("inc/header.php");
 ?>
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="utf-8" />
-    <title>上傳歌曲 - 創作者工作室</title>
-    <link rel="stylesheet" href="css/common.css">
-    <link rel="stylesheet" href="css/music.css">
-</head>
-<body>
 
     <div id="content-container" style="max-width: 600px;">
         <h2>上傳新歌曲</h2>
@@ -36,7 +26,27 @@ if (!isset($_SESSION["login_session"]) || $_SESSION["login_session"] !== true) {
 
             <div class="form-group">
                 <label>封面圖片 (Optional)</label>
-                <input type="file" name="cover_file" accept="image/*" style="background: #282828;">
+                <img id="preview-img" src="#" style="max-width: 200px; max-height: 200px; object-fit: cover; margin-bottom: 10px; display: none; border-radius: 4px; border: 1px solid #333;">
+                <input type="file" name="cover_file" id="cover-input" accept="image/*" style="background: #282828;">
+                
+                <script>
+                    document.getElementById('cover-input').addEventListener('change', function(e) {
+                        const file = e.target.files[0];
+                        const preview = document.getElementById('preview-img');
+                        
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                preview.src = e.target.result;
+                                preview.style.display = 'block';
+                            }
+                            reader.readAsDataURL(file);
+                        } else {
+                            preview.src = '#';
+                            preview.style.display = 'none';
+                        }
+                    });
+                </script>
             </div>
             
             <div class="form-group">

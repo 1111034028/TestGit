@@ -6,7 +6,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $sno = mysqli_real_escape_string($link, $_POST["sno"]);
     $name = mysqli_real_escape_string($link, $_POST["name"]);
     $username = mysqli_real_escape_string($link, $_POST["username"]);
-    $password = mysqli_real_escape_string($link, $_POST["password"]); // Note: Should hash in production, but following existing plain text convention for now
+    $password = mysqli_real_escape_string($link, $_POST["password"]); // 注意：實際應用中應進行雜湊處理，但目前依照現有慣例使用明文
     $birthday = mysqli_real_escape_string($link, $_POST["birthday"]);
     $address = mysqli_real_escape_string($link, $_POST["address"]);
 

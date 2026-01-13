@@ -57,8 +57,8 @@ $result = mysqli_query($link, $sql);
                         <?php echo htmlspecialchars($row['location']); ?>
                     </div>
                     <div class="album-actions">
-                        <a href="albumEdit.php?id=<?php echo $row['album_id']; ?>" class="btn-edit">編輯</a>
-                        <a href="albumDelete.php?id=<?php echo $row['album_id']; ?>" class="btn-del" onclick="return confirm('確定要刪除嗎？');">刪除</a>
+                        <a href="albumEdit.php?id=<?php echo $row['album_id']; ?>" class="btn-album">編輯</a>
+                        <a href="albumDelete.php?id=<?php echo $row['album_id']; ?>" class="btn-album" onclick="return confirm('確定要刪除嗎？');">刪除</a>
                     </div>
                 </div>
                 <?php } ?>

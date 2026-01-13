@@ -19,6 +19,7 @@ if (!$row) {
     <link rel="stylesheet" href="css/navCSS.css">
     <link rel="stylesheet" href="css/indexCSS.css">
     <link rel="stylesheet" href="css/album.css">
+    <link rel="stylesheet" href="css/editForm.css">
 </head>
 <body>
     <div id="wrap">
@@ -49,19 +50,40 @@ if (!$row) {
                         <th>照片 :</th>
                         <td>
                             <div style="margin-bottom: 10px;">
-                                <img src="img/<?php echo $row['picurl']; ?>" style="max-width: 200px; border: 1px solid #ddd;">
+                                <img id="img-preview" src="img/<?php echo $row['picurl']; ?>" style="max-width: 200px; border-radius: 8px; border: 1px solid #ddd; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
                             </div>
-                            <input type="file" name="photo" accept="image/*">
+                            <input type="file" name="photo" accept="image/*" onchange="previewImage(this)">
                             <div class="hint">若不修改照片請留空</div>
                         </td>
                     </tr>
+                    <tr>
+                        <td colspan="2" class="btn-container">
+                            <div class="btn-container-inner">
+                                <input type="submit" value="確定修改" class="btn-album">
+                                <a href="album.php" style="text-decoration: none;">
+                                    <input type="button" value="回相簿管理" class="btn-album">
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
                 </table>
-                
-                <div class="entryBtns" style="margin-top: 20px;">
-                    <input type="submit" value="確定修改">
-                    <a href="album.php" style="text-decoration: none;"><input type="button" value="回相簿管理"></a>
-                </div>
             </form>
+
+            <script>
+            function previewImage(input) {
+                var imgPreview = document.getElementById('img-preview');
+                
+                if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        imgPreview.src = e.target.result;
+                    }
+                    
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+            </script>
 
         </main>
 

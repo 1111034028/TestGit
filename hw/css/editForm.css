@@ -1,0 +1,145 @@
+/* hw/css/editForm.css - 編輯表單專用樣式 */
+
+#contents table {
+    max-width: 650px; /* 縮小寬度以達到置中效果 */
+    width: 95%;
+    border-collapse: separate;
+    border-spacing: 0; /* 改為 0 以處理邊框 */
+    margin: 30px auto; /* 左右自動邊距達成置中 */
+    background-color: #fff;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+#contents th {
+    text-align: right;
+    padding: 15px 20px;
+    color: #555;
+    font-size: 16px;
+    font-weight: bold;
+    width: 35%;
+    vertical-align: middle;
+    background-color: #fcfcfc;
+}
+
+#contents td {
+    text-align: left;
+    padding: 10px 20px;
+    vertical-align: middle;
+}
+
+
+/* 表格標頭與內容 */
+th, td {
+    border: 1px solid #382078; /* 實整格線，深紫色 */
+}
+
+/* 按鈕區域：移除格線並置中 */
+#contents td.btn-container {
+    border: none !important; /* 徹底移除按鈕區域的格線 */
+    padding: 40px 0 20px 0;
+    display: table-cell; /* 恢復為 table-cell 以便佈局 */
+    text-align: center;  /* 傳統置中方式 */
+}
+
+.btn-container-inner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+
+/* 輸入框美化 */
+input[type="text"],
+input[type="date"],
+input[type="password"],
+input[type="email"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 15px;
+    color: #333;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    background-color: #fff;
+}
+
+input[type="text"]:focus,
+input[type="date"]:focus,
+input[type="password"]:focus {
+    border-color: #6fbb9a;
+    box-shadow: 0 0 8px rgba(111, 187, 154, 0.3);
+    outline: none;
+}
+
+/* 唯讀欄位樣式 */
+input[readonly] {
+    background-color: #f5f5f5 !important;
+    border-color: #eee !important;
+    color: #999 !important;
+    cursor: not-allowed;
+}
+
+/* 按鈕容器（已移至上方統一處理） */
+
+/* 複用之前的按鈕 ID 風格 */
+#btn-update {
+    display: inline-block;
+    padding: 12px 40px;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(67, 160, 71, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-right: 15px;
+}
+
+
+#btn-update:hover {
+    background: linear-gradient(135deg, #81c784 0%, #4caf50 100%);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(67, 160, 71, 0.4);
+}
+
+#btn-cancel {
+    color: #e84393;
+    text-decoration: underline;
+    font-weight: bold;
+    font-size: 15px;
+    transition: color 0.3s;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+#btn-cancel:hover {
+    color: #d63031;
+}
+
+/* 訊息樣式 */
+.msg-success {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #c8e6c9;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.msg-error {
+    background-color: #ffebee;
+    color: #d32f2f;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #ffcdd2;
+    margin-bottom: 20px;
+    text-align: center;
+}

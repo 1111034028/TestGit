@@ -44,6 +44,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="css/navCSS.css">
     <link rel="stylesheet" href="css/indexCSS.css">
     <link rel="stylesheet" href="css/album.css">
+    <link rel="stylesheet" href="css/editForm.css">
    
 </head>
 <body>
@@ -74,17 +75,46 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <tr>
                         <th>照片 :</th>
                         <td>
-                            <input type="file" name="photo" accept="image/*" required>
-                            <small class="hint">未選擇任何檔案</small>
+                            <input type="file" name="photo" id="photo-input" accept="image/*" required onchange="previewImage(this)">
+                            <div id="preview-container" style="margin-top: 10px; display: none;">
+                                <img id="img-preview" src="#" alt="預覽圖" style="max-width: 200px; border-radius: 8px; border: 1px solid #ddd; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                            </div>
+                            <small class="hint">請選取 JPEG, PNG 或 GIF 格式</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" class="btn-container">
+                            <div class="btn-container-inner">
+                                <input type="submit" value="確定新增" class="btn-album">
+                                <a href="album.php" style="text-decoration: none;">
+                                    <input type="button" value="回相簿管理" class="btn-album">
+                                </a>
+                            </div>
                         </td>
                     </tr>
                 </table>
-                
-                <div class="entryBtns" style="margin-top: 20px;">
-                    <input type="submit" value="確定新增">
-                    <a href="album.php" style="text-decoration: none;"><input type="button" value="回相簿管理"></a>
-                </div>
             </form>
+
+            <script>
+            function previewImage(input) {
+                var previewContainer = document.getElementById('preview-container');
+                var imgPreview = document.getElementById('img-preview');
+                
+                if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        imgPreview.src = e.target.result;
+                        previewContainer.style.display = 'block';
+                    }
+                    
+                    reader.readAsDataURL(input.files[0]);
+                } else {
+                    imgPreview.src = '#';
+                    previewContainer.style.display = 'none';
+                }
+            }
+            </script>
 
         </main>
 

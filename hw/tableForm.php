@@ -18,13 +18,13 @@
         </header>
         <main id="contents">
             <h2 id="cat">表格與表單</h2>
-            <form id="entryFrom" action="#" method="post">
+            <form id="entryFrom" action="showData.php" method="post" enctype="multipart/form-data">
                 <p><strong><span class="require">*</span>為必填項目。</strong></p>
                 <table class="entryTable">
                     <caption>貓咪資料</caption>
                     <tr>
                         <th>貓咪名*</th>
-                        <td><input type="text" name="cat-name" required autofocus></td>
+                        <td><input type="text" name="catName" required autofocus></td>
                     </tr>
                     <tr>
                         <th>年齡*</th>
@@ -44,19 +44,19 @@
                     <tr>
                         <th>性別*</th>
                         <td>
-                            <input type="radio" name="sex" id="male" value="男生" checked><label for="male">男生</label>
-                            <input type="radio" name="sex" id="female" value="女生"><label for="female">女生</label>
+                            <input type="radio" name="gender" id="male" value="男生" checked><label for="male">男生</label>
+                            <input type="radio" name="gender" id="female" value="女生"><label for="female">女生</label>
                         </td>
                     </tr>
                     <tr>
                         <th>最愛的食物</th>
                         <td>
-                            <input type="checkbox" name="favorite" id="favo1" value="魚"><label for="favo1">魚</label>
-                            <input type="checkbox" name="favorite" id="favo2" value="肉"><label for="favo2">肉</label>
-                            <input type="checkbox" name="favorite" id="favo3" value="乾飼料"><label for="favo3">乾飼料</label>
-                            <input type="checkbox" name="favorite" id="favo4" value="貓罐頭"><label for="favo4">貓罐頭</label>
-                            <input type="checkbox" name="favorite" id="favo5" value="肉泥"><label for="favo5">肉泥</label>
-                            <input type="checkbox" name="favorite" id="favo6" value="其他"><label for="favo6">其他</label>
+                            <input type="checkbox" name="food[]" id="favo1" value="魚"><label for="favo1">魚</label>
+                            <input type="checkbox" name="food[]" id="favo2" value="肉"><label for="favo2">肉</label>
+                            <input type="checkbox" name="food[]" id="favo3" value="乾飼料"><label for="favo3">乾飼料</label>
+                            <input type="checkbox" name="food[]" id="favo4" value="貓罐頭"><label for="favo4">貓罐頭</label>
+                            <input type="checkbox" name="food[]" id="favo5" value="肉泥"><label for="favo5">肉泥</label>
+                            <input type="checkbox" name="food[]" id="favo6" value="其他"><label for="favo6">其他</label>
                         </td>
                     </tr>
                     <tr>
@@ -68,7 +68,7 @@
                     <caption id="owner">飼主資料</caption>
                     <tr>
                         <th>飼主名*</th>
-                        <td><input type="text" name="name" required placeholder="黑貓小町" required><small>※可用暱稱</small>
+                        <td><input type="text" name="ownerName" required placeholder="黑貓小町" required><small>※可用暱稱</small>
                         </td>
                     </tr>
                     <tr>
@@ -82,8 +82,8 @@
                     </tr>
                 </table>
                 <div class="entryBtns">
-                    <input type="reset" value="清除充填">
-                    <input type="submit" value="送出">
+                    <input type="reset" value="清除充填" class="btn btn-t" id="btn-reset">
+                    <input type="submit" value="送出" class="btn btn-t" id="btn-submit">
                 </div>
             </form>
         </main>

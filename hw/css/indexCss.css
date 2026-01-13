@@ -36,9 +36,9 @@ body {
     width: 798px;
     margin: 40px auto;
     padding: 40px 80px;
-    background-color: rgba(255, 255, 255, 0.9); /* 半透明白底 */
-    border-radius: 15px; /* 圓角 */
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* 深邃陰影 */
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 15px; /* Rounded corners */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     text-align: center;
     border: 1px solid rgba(255, 255, 255, 0.5);
 }
@@ -98,88 +98,6 @@ h2 {
     height: auto;
     border-radius: 8px;
 }
-
-/* 通用表格樣式 (已註解，避免與各頁面衝突) */
-/*
-table {
-    margin: 0 auto;
-    border-collapse: separate;
-    border-spacing: 0 15px;
-    width: 100%;
-}
-
-th {
-    text-align: right;
-    padding-right: 15px;
-    color: #333;
-    font-size: 16px;
-    font-weight: bold;
-    white-space: nowrap;
-    width: 40%;
-}
-
-td {
-    text-align: left;
-}
-*/
-
-/* 通用表單樣式 (已註解) */
-/*
-form {
-    display: inline-block;
-    width: 100%;
-}
-
-input[type="text"],
-input[type="date"],
-input[type="amount"],
-input[type="number"],
-input[type="decimal"],
-input[type="file"]
-{
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 15px;
-    transition: border-color 0.3s, box-shadow 0.3s;
-    outline: none;
-    width: 200px;
-    max-width: 90%;
-}
-
-input[type="file"] {
-    width: auto;
-}
-
-input:focus {
-    border-color: #6fbb9a;
-    box-shadow: 0 0 5px rgba(111, 187, 154, 0.5);
-}
-
-input[type="submit"] {
-    background-color: #6fbb9a;
-    color: white;
-    border: none;
-    padding: 10px 40px;
-    font-size: 16px;
-    border-radius: 25px;
-    cursor: pointer;
-    font-weight: bold;
-    letter-spacing: 1px;
-    transition: background-color 0.3s, transform 0.1s;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    margin-top: 15px;
-}
-
-input[type="submit"]:hover {
-    background-color: #5aa185;
-}
-
-input[type="submit"]:active {
-    transform: translateY(2px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-*/
 
 /* 通用文字對齊 */
 .text-right, .num {

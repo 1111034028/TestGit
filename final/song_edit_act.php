@@ -1,9 +1,5 @@
 <?php
-session_start();
-if (!isset($_SESSION["login_session"]) || $_SESSION["login_session"] !== true) {
-    header("Location: login.php");
-    exit;
-}
+require_once("inc/auth_guard.php");
 
 require_once("../DB/DB_open.php");
 

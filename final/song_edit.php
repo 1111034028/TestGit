@@ -1,9 +1,5 @@
 <?php
-session_start();
-if (!isset($_SESSION["login_session"]) || $_SESSION["login_session"] !== true) {
-    header("Location: login.php");
-    exit;
-}
+require_once("inc/auth_guard.php");
 
 require_once("../DB/DB_open.php");
 
@@ -41,15 +37,10 @@ if (mysqli_num_rows($result_song) == 0) {
 
 $song = mysqli_fetch_assoc($result_song);
 ?>
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="utf-8" />
-    <title>編輯歌曲 - 創作者工作室</title>
-    <link rel="stylesheet" href="css/common.css">
-    <link rel="stylesheet" href="css/music.css">
-</head>
-<body>
+<?php
+$page_title = "編輯歌曲 - 創作者工作室";
+require_once("inc/header.php");
+?>
 
     <div id="content-container" style="max-width: 600px;">
         <h2>編輯歌曲資訊</h2>

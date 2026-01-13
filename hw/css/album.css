@@ -1,32 +1,29 @@
 /* hw/css/album.css - 相簿管理專用樣式 */
 
-/* 按鈕共用樣式 (紫色主題) */
-input[type="submit"], 
-input[type="button"], 
-button,
-.add-btn,
-.btn-edit, 
-.btn-del {
-    background-color: #6c5ce7 !important; /* 紫色 */
-    color: white !important;
-    border: 1px solid #a29bfe;
-    padding: 8px 16px;
-    border-radius: 5px;
-    cursor: pointer;
-    text-decoration: none;
+/* 按鈕統一 ID 樣式 (紫色主題) */
+.btn-album {
     display: inline-block;
-    font-size: 0.9em;
-    transition: background 0.3s;
+    padding: 12px 35px;
+    border-radius: 50px; /* 圓角膠囊型 */
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+    line-height: 1.2;
 }
 
-input[type="submit"]:hover, 
-input[type="button"]:hover, 
-button:hover,
-.add-btn:hover,
-.btn-edit:hover, 
-.btn-del:hover {
-    background-color: #5849be !important; /* 深紫色 */
+.btn-album:hover {
+    background: linear-gradient(135deg, #b2aeff 0%, #5b4bc4 100%);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(108, 92, 231, 0.4);
+    color: white !important;
 }
+
 
 /* 確保刪除按鈕也是紫色 (覆蓋舊樣式) */
 .btn-del {
@@ -159,31 +156,72 @@ button:hover,
     color: #ff7675;
 }
 
-/* 表單表格樣式 (簡單版，用於 Add/Edit) */
-.entryTable {
-    width: 100%;
-    max-width: 600px;
-    margin: 0 auto;
-    border-collapse: collapse;
+/* 表單表格樣式 (用於 Add/Edit) */
+#contents .entryTable {
+    width: 100% !important;
+    max-width: 650px !important;
+    margin: 30px auto !important;
+    border-collapse: collapse !important; /* 強制合併格線 */
+    background-color: #fff;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 2px solid #382078 !important; /* 外框加粗 */
 }
-.entryTable th {
-    width: 30%;
+
+#contents .entryTable th, 
+#contents .entryTable td {
+    border: 1px solid #382078 !important; /* 強制顯示每一格的深紫色格線 */
+    padding: 15px 20px;
+    vertical-align: middle;
+}
+
+#contents .entryTable th {
+    width: 35%;
     text-align: right;
-    padding: 10px;
-    color: #333;
+    color: #444;
+    font-size: 16px;
+    font-weight: bold;
+    background-color: #f8f8f8;
+}
+
+#contents .entryTable td {
+    text-align: left;
+}
+
+#contents .entryTable input[type="text"],
+#contents .entryTable input[type="datetime-local"],
+#contents .entryTable input[type="file"] {
+    width: 100%;
+    max-width: 400px; /* 限制輸入框寬度避免太擁擠 */
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+    box-sizing: border-box;
+}
+
+/* 按鈕區域：移除該列內部的格線並置中 */
+#contents .entryTable td.btn-container {
+    border: none !important; /* 嘗試移除這一格的邊框 */
+    border-top: 1px solid #382078 !important; /* 僅保留上方格線與主表區隔 */
+    padding: 30px 0 !important;
+    text-align: center !important; /* 強制內容置中 */
+}
+
+.btn-container-inner {
+    display: inline-flex !important; /* 改為 inline-flex 以配合父級 td 的 text-align: center */
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+/* 針對按鈕本身微調 */
+.btn-container-inner input[type="submit"],
+.btn-container-inner input[type="button"] {
+    min-width: 120px;
+    padding: 12px 24px !important;
     font-weight: bold;
 }
-.entryTable td {
-    padding: 10px;
-}
-.entryTable input[type="text"],
-.entryTable input[type="datetime-local"] {
-    width: 90%;
-    padding: 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-.entryBtns {
-    text-align: center;
-    margin-top: 20px;
-}
+
+

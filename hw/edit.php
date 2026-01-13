@@ -61,7 +61,7 @@ if (($action == 'edit' || $action == 'update') && !empty($id)) {
     <title>編輯通訊錄</title>
     <link rel="stylesheet" href="css/navCSS.css">
     <link rel="stylesheet" href="css/indexCSS.css">
-    <link rel="stylesheet" href="css/tableForm.css">
+    <link rel="stylesheet" href="css/editForm.css">
 </head>
 <body>
     <div id="wrap">
@@ -78,7 +78,7 @@ if (($action == 'edit' || $action == 'update') && !empty($id)) {
                 </div>
                 <?php if ($msg_type == 'success'): ?>
                     <div style="text-align:center; margin-bottom:20px;">
-                        <a href="contacts.php" style="font-weight:bold;">返回通訊錄首頁</a>
+                        <a href="contacts.php" style="font-weight:bold; color: #6fbb9a;">返回通訊錄列表</a>
                     </div>
                 <?php endif; ?>
             <?php endif; ?>
@@ -86,21 +86,21 @@ if (($action == 'edit' || $action == 'update') && !empty($id)) {
             <?php if ($row): ?>
             <form action="edit.php" method="post">
                 <input type="hidden" name="action" value="update">
+                <input type="hidden" name="sno" value="<?php echo htmlspecialchars($row['sno']); ?>">
                 <table>
                     <tr>
                         <th>學號 (唯讀):</th>
-                        <!-- 學號通常作為主鍵不給修改 -->
                         <td>
-                            <input type="text" name="sno" value="<?php echo htmlspecialchars($row['sno']); ?>" readonly style="background-color: #eee; cursor: not-allowed; color: #888;">
+                            <input type="text" value="<?php echo htmlspecialchars($row['sno']); ?>" readonly>
                         </td>
                     </tr>
                     <tr>
                         <th>姓名:</th>
-                        <td><input type="text" name="name" value="<?php echo htmlspecialchars($row['name']); ?>" required></td>
+                        <td><input type="text" name="name" value="<?php echo htmlspecialchars($row['name']); ?>" required placeholder="請輸入姓名"></td>
                     </tr>
                     <tr>
                         <th>住址:</th>
-                        <td><input type="text" name="address" value="<?php echo htmlspecialchars($row['address']); ?>"></td>
+                        <td><input type="text" name="address" value="<?php echo htmlspecialchars($row['address']); ?>" placeholder="請輸入住址"></td>
                     </tr>
                     <tr>
                         <th>生日:</th>
@@ -108,16 +108,18 @@ if (($action == 'edit' || $action == 'update') && !empty($id)) {
                     </tr>
                     <tr>
                         <th>帳號:</th>
-                        <td><input type="text" name="username" value="<?php echo htmlspecialchars($row['username']); ?>"></td>
+                        <td><input type="text" name="username" value="<?php echo htmlspecialchars($row['username']); ?>" placeholder="請輸入帳號"></td>
                     </tr>
                     <tr>
                         <th>密碼:</th>
-                        <td><input type="text" name="password" value="<?php echo htmlspecialchars($row['password']); ?>"></td>
+                        <td><input type="text" name="password" value="<?php echo htmlspecialchars($row['password']); ?>" placeholder="請輸入密碼"></td>
                     </tr>
                     <tr>
                         <td colspan="2" class="btn-container">
-                            <input type="submit" value="更新資料">
-                            <a href="contacts.php" class="btn" style="background-color:#b2bec3; text-decoration:none;">取消</a>
+                            <div class="btn-container-inner">
+                                <input type="submit" value="更新資料" id="btn-update">
+                                <a href="contacts.php" id="btn-cancel">取消</a>
+                            </div>
                         </td>
                     </tr>
                 </table>

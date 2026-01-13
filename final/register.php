@@ -12,13 +12,13 @@
         .login-card {
             max-width: 400px; /* 稍微加寬 */
         }
-        .login-container { /* Changed from #content-container */
+        .login-container { /* 修改自 #content-container */
             max-width: 600px;
         }
     </style>
 </head>
 <body class="login-body">
-    <!-- Nav removed -->
+    <!-- 移除導覽列 -->
 
     <div class="login-container">
         <h1 style="text-align:center;">註冊新帳戶</h1>

@@ -29,7 +29,8 @@ if ($username != "" && $password != "") {
         $_SESSION["login_session"] = true;
         $_SESSION["username"] = $username;
         $_SESSION["sno"] = $row['sno']; 
-        $_SESSION["picture"] = $row['picture']; // Store avatar path (filename)
+        $_SESSION["picture"] = $row['picture']; // 儲存頭貼路徑 (檔名)
+        $_SESSION["first_login"] = true; // 顯示歡迎訊息的標記
         header("Location: index.php"); 
         exit;
     } else {
@@ -51,7 +52,7 @@ if ($username != "" && $password != "") {
     <link rel="stylesheet" href="css/login.css">
 </head>
 <body class="login-body">
-    <!-- Nav removed for App Shell integration -->
+    <!-- 為 App Shell 移除導覽列 -->
 
     <div class="login-container">
         <h1 style="text-align:center;">登入</h1>

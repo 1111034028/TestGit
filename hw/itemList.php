@@ -10,13 +10,79 @@
     <link rel="stylesheet" href="css/indexCSS.css" media="all">
     <?php
     function printItem($image, $title, $detail){
-        echo "<div class='item'>";
+        // Escape for JS
+        $safetitle = htmlspecialchars(json_encode($title), ENT_QUOTES, 'UTF-8');
+        $safedetail = htmlspecialchars(json_encode($detail), ENT_QUOTES, 'UTF-8');
+        echo "<div class='item' onclick='openModal(\"$image\", $safetitle, $safedetail)' style='cursor: pointer;'>";
         echo "<img src='img/" . $image . "' alt=''>";
         echo "<h4>" . $title . "</h4>";
         echo "<p>" . $detail . "</p>";
         echo "</div>";
     }
     ?>
+    <style>
+        /* Lightbox Modal CSS */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.8); /* Black w/ opacity */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 10px;
+            position: relative;
+            animation: zoomIn 0.3s;
+        }
+
+        @keyframes zoomIn {
+            from {transform: scale(0.7); opacity: 0;}
+            to {transform: scale(1); opacity: 1;}
+        }
+
+        .modal-img {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .modal-header h3 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            right: 15px;
+            top: 5px;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body>
@@ -89,6 +155,46 @@
             ?>
         </footer>
     </div>
+
+    <!-- Modal Elements -->
+    <div id="sdgModal" class="modal" onclick="closeModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <img id="modalImg" class="modal-img" src="" alt="">
+            <div class="modal-header">
+                <h3 id="modalTitle"></h3>
+            </div>
+            <div class="modal-body">
+                <p id="modalDetail" style="color: #555; line-height: 1.6;"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openModal(image, title, detail) {
+            var modal = document.getElementById("sdgModal");
+            var modalImg = document.getElementById("modalImg");
+            var modalTitle = document.getElementById("modalTitle");
+            var modalDetail = document.getElementById("modalDetail");
+
+            modal.style.display = "flex";
+            modalImg.src = "img/" + image;
+            modalTitle.innerText = title;
+            modalDetail.innerText = detail;
+        }
+
+        function closeModal() {
+            var modal = document.getElementById("sdgModal");
+            modal.style.display = "none";
+        }
+        
+        // Close on escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape") {
+                closeModal();
+            }
+        });
+    </script>
 </body>
 
 </html>

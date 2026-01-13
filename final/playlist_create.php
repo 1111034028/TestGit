@@ -1,19 +1,9 @@
 <?php
-session_start();
-if (!isset($_SESSION["login_session"]) || $_SESSION["login_session"] !== true) {
-    header("Location: login.php");
-    exit;
-}
+require_once("inc/auth_guard.php");
+
+$page_title = "建立新歌單 - 音樂串流平台";
+require_once("inc/header.php");
 ?>
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="utf-8" />
-    <title>建立新歌單 - 音樂串流平台</title>
-    <link rel="stylesheet" href="css/common.css">
-    <link rel="stylesheet" href="css/music.css">
-</head>
-<body>
     <!-- Nav removed -->
 
     <div id="content-container">

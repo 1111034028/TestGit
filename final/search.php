@@ -5,7 +5,7 @@ require_once("../DB/DB_open.php");
 $keyword = "";
 $search_result = null;
 
-// Support both 'q' (from shell) and 'keyword' (legacy)
+// 支援 'q' (來自 Shell) 與 'keyword' (舊版)
 if (isset($_GET["q"])) {
     $keyword = mysqli_real_escape_string($link, $_GET["q"]);
 } elseif (isset($_GET["keyword"])) {
@@ -13,82 +13,40 @@ if (isset($_GET["q"])) {
 }
 
 if ($keyword != "") {
-    $sql = "SELECT * FROM songs WHERE title LIKE '%$keyword%' OR artist LIKE '%$keyword%' ORDER BY upload_date DESC";
+    // 1. Pagination Init
+    $page = isset($_GET['page']) ? intval($_GET['page']) : 1;
+    if ($page < 1) $page = 1;
+    $limit = 18; // Same grid size as homepage
+    $offset = ($page - 1) * $limit;
+
+    // 2. Count Total Results
+    $count_sql = "SELECT COUNT(*) as total FROM songs WHERE title LIKE '%$keyword%' OR artist LIKE '%$keyword%'";
+    $count_result = mysqli_query($link, $count_sql);
+    $count_row = mysqli_fetch_assoc($count_result);
+    $total_items = $count_row['total'];
+    $total_pages = ceil($total_items / $limit);
+    if ($page > $total_pages && $total_pages > 0) $page = $total_pages;
+
+    // 3. Fetch Page Items with Weighted Sorting (Title Match > Artist Match)
+    $sql = "SELECT * FROM songs 
+            WHERE title LIKE '%$keyword%' OR artist LIKE '%$keyword%' 
+            ORDER BY 
+              (title LIKE '%$keyword%') DESC, 
+              (artist LIKE '%$keyword%') DESC, 
+              upload_date DESC 
+            LIMIT $offset, $limit";
     $search_result = mysqli_query($link, $sql);
 }
 ?>
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="utf-8" />
-    <title>搜尋音樂</title>
-    <link rel="stylesheet" href="css/common.css">
-    <link rel="stylesheet" href="css/music.css">
-    <!-- Reuse Player Styles -->
-    <style>
-        /* Copied from index.php - ideally should be in music.css */
-        #player-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: #181818;
-            border-top: 1px solid #333;
-            padding: 15px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            z-index: 2000;
-        }
-        .player-info { display: flex; align-items: center; width: 30%; }
-        .player-controls { display: flex; flex-direction: column; align-items: center; width: 40%; }
-        .control-buttons { display: flex; align-items: center; gap: 20px; margin-bottom: 8px; }
-        .control-btn { background: none; border: none; color: #b3b3b3; cursor: pointer; font-size: 1.2rem; }
-        .control-btn:hover { color: white; }
-        .play-btn { background: white; color: black; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
-        .progress-container { width: 100%; display: flex; align-items: center; gap: 10px; font-size: 0.75rem; color: #b3b3b3; }
-        #progress-bar { flex-grow: 1; height: 4px; background: #555; border-radius: 2px; cursor: pointer; position: relative; }
-        #progress-fill { height: 100%; background: var(--accent-color); width: 0%; border-radius: 2px; }
-        body { padding-bottom: 20px; }
-        
-        .play-overlay {
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; border-radius: 8px;
-        }
-        .song-card:hover .play-overlay { opacity: 1; }
-        .card-play-btn { background: var(--accent-color); color: black; border-radius: 50%; width: 48px; height: 48px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-        
-        /* Search Box */
-        .search-container {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        .search-input {
-            width: 60%;
-            max-width: 500px;
-            padding: 15px 25px;
-            border-radius: 50px;
-            border: none;
-            background: white;
-            color: #333;
-            font-size: 1.1rem;
-            outline: none;
-        }
-        .search-btn {
-            padding: 15px 30px;
-            border-radius: 50px;
-            border: none;
-            background: var(--accent-color);
-            color: black;
-            font-weight: bold;
-            font-size: 1rem;
-            margin-left: 10px;
-            cursor: pointer;
-        }
-    </style>
-</head>
+<?php
+$page_title = "搜尋音樂";
+require_once("inc/header.php");
+?>
+    <!-- 重複使用播放器樣式 -->
+    <link rel="stylesheet" href="css/search.css">
+    <link rel="stylesheet" href="css/index_content.css?v=2">
 <body>
-    <!-- Nav removed -->
+    <!-- 移除導覽列 -->
     <div id="content-container" style="margin-top: 20px;">
         <h1 style="text-align: center; margin-bottom: 30px;">搜尋結果</h1>
         
@@ -103,21 +61,25 @@ if ($keyword != "") {
                 搜尋結果: <?php echo mysqli_num_rows($search_result); ?> 筆
             </div>
             
+            
             <div class="song-list">
                 <?php
                 if (mysqli_num_rows($search_result) > 0) {
                     while ($row = mysqli_fetch_assoc($search_result)) {
                         $cover = "get_cover.php?id=" . $row['id'];
                 ?>
-                    <div class="song-card" onclick="playSong('<?php echo $row['title']; ?>', '<?php echo $row['artist']; ?>', 'music/<?php echo $row['file_path']; ?>', '<?php echo $cover; ?>', <?php echo $row['id']; ?>)">
-                        <div style="position: relative;">
+                    <div class="song-card">
+                        <div style="position: relative; cursor: pointer;" onclick="playContextSong('<?php echo htmlspecialchars($row['title'], ENT_QUOTES); ?>', '<?php echo htmlspecialchars($row['artist'], ENT_QUOTES); ?>', 'music/<?php echo $row['file_path']; ?>', '<?php echo $cover; ?>', <?php echo $row['id']; ?>, 'all', 0, '所有歌曲')" title="點擊播放">
                             <img src="<?php echo $cover; ?>" class="song-cover">
                             <div class="play-overlay">
-                                <button class="card-play-btn">▶</button>
+                                <span class="card-play-btn">▶</span>
                             </div>
                         </div>
                         <div class="song-title"><?php echo htmlspecialchars($row['title']); ?></div>
-                        <div class="song-artist"><?php echo htmlspecialchars($row['artist']); ?></div>
+                        <div class="song-artist" style="display: flex; justify-content: space-between; align-items: center;">
+                            <span><?php echo htmlspecialchars($row['artist']); ?></span>
+                            <button style="background: none; border: none; color: #aaa; cursor: pointer; font-size: 1.2rem;" onclick="event.stopPropagation(); openPlaylistModal(<?php echo $row['id']; ?>)" title="加入播放清單">+</button>
+                        </div>
                     </div>
                 <?php
                     }
@@ -126,22 +88,45 @@ if ($keyword != "") {
                 }
                 ?>
             </div>
+            
+            <!-- Pagination Controls -->
+            <?php if (isset($total_pages) && $total_pages > 1): ?>
+            <div class="pagination-container">
+                <!-- First Page -->
+                <?php if ($page > 1): ?>
+                    <a href="search.php?q=<?php echo urlencode($keyword); ?>&page=1" class="page-btn">&laquo; 最前頁</a>
+                    <a href="search.php?q=<?php echo urlencode($keyword); ?>&page=<?php echo $page-1; ?>" class="page-btn">&lsaquo; 上一頁</a>
+                <?php else: ?>
+                    <span class="page-btn disabled">&laquo; 最前頁</span>
+                    <span class="page-btn disabled">&lsaquo; 上一頁</span>
+                <?php endif; ?>
+                
+                <span class="page-info">第 <?php echo $page; ?> 頁 / 共 <?php echo $total_pages; ?> 頁</span>
+                
+                <!-- Next & Last Page -->
+                <?php if ($page < $total_pages): ?>
+                    <a href="search.php?q=<?php echo urlencode($keyword); ?>&page=<?php echo $page+1; ?>" class="page-btn">下一頁 &rsaquo;</a>
+                    <a href="search.php?q=<?php echo urlencode($keyword); ?>&page=<?php echo $total_pages; ?>" class="page-btn">最後頁 &raquo;</a>
+                <?php else: ?>
+                    <span class="page-btn disabled">下一頁 &rsaquo;</span>
+                    <span class="page-btn disabled">最後頁 &raquo;</span>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
         <?php endif; ?>
     </div>
 
-    <script>
-        function playSong(title, artist, src, cover, id) {
-            // Check if parent exists AND is not self
-            if (window.parent && window.parent !== window && window.parent.playSong) {
-                window.parent.playSong(title, artist, src, cover, id);
-            } else {
-                alert("播放器載入錯誤");
-            }
-            
-            // Increment Play Count
-            fetch(`play_count.php?id=${id}`);
-        }
-    </script>
+    <!-- Playlist Modal -->
+    <div id="playlist-modal">
+        <div class="modal-content">
+            <form>
+                <!-- Dynamic content will be inserted here by JS -->
+            </form>
+        </div>
+    </div>
+
+    <script src="js/player_bridge.js?v=5"></script>
+    <script src="js/index_content.js?v=5"></script>
     
     <?php include "foot.html"; ?>
 </body>

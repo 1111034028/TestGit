@@ -1,12 +1,8 @@
 <?php session_start(); ?>
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="utf-8" />
-    <title>隱私權政策 - 音樂串流平台</title>
-    <link rel="stylesheet" href="css/common.css">
-    <link rel="stylesheet" href="css/music.css">
-</head>
+<?php
+$page_title = "隱私權政策 - 音樂串流平台";
+require_once("inc/header.php");
+?>
 <body>
     <!-- Nav removed -->
 

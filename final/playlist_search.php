@@ -4,15 +4,10 @@ require_once("../DB/DB_open.php");
 
 $search = isset($_GET['q']) ? mysqli_real_escape_string($link, $_GET['q']) : '';
 ?>
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="utf-8" />
-    <title>搜尋歌單 - 音樂串流平台</title>
-    <link rel="stylesheet" href="css/common.css">
-    <link rel="stylesheet" href="css/music.css">
-</head>
-<body>
+<?php
+$page_title = "搜尋歌單 - 音樂串流平台";
+require_once("inc/header.php");
+?>
     <!-- Nav removed -->
 
     <div id="content-container">
@@ -33,8 +28,8 @@ $search = isset($_GET['q']) ? mysqli_real_escape_string($link, $_GET['q']) : '';
         <div class="song-list">
             <?php
             if ($search) {
-                // Search in playlists name or user's name
-                // Need join to get creator name
+                // 搜尋歌單名稱或使用者名稱
+                // 需要 JOIN 來取得建立者名稱
                 $sql = "SELECT p.*, s.name as creator_name FROM playlists p 
                         JOIN students s ON p.user_id = s.sno 
                         WHERE p.name LIKE '%$search%' OR s.name LIKE '%$search%' 
@@ -44,7 +39,7 @@ $search = isset($_GET['q']) ? mysqli_real_escape_string($link, $_GET['q']) : '';
                 if (mysqli_num_rows($result) > 0) {
                     while ($row = mysqli_fetch_assoc($result)) {
                         $pid = $row['id'];
-                        // Count songs
+                        // 計算歌曲數
                         $c_sql = "SELECT COUNT(*) as cnt FROM playlist_songs WHERE playlist_id = $pid";
                         $c_res = mysqli_query($link, $c_sql);
                         $c_row = mysqli_fetch_assoc($c_res);

@@ -57,14 +57,26 @@ let currentIndex = -1;
 let isPlaying = false;
 let playCounted = false; // Flag to track if play count has been sent for this session
 
-// Modes: 'sequence' (List Loop 🔁), 'one' (Single Loop 🔂), 'shuffle' (List Random 🔀)
-let mode = 'sequence'; 
+// Modes: shuffle (bool), loop (sequence 🔁 / one 🔂)
+let isShuffle = false;
+let loopMode = 'sequence'; // 'sequence' or 'one'
+let queueType = 'all'; // Track what we loaded
+let queueTypeId = 0;
 
 // Load Queue from API
 function loadQueue(type, id, startId = 0, forceShuffle = false) {
-    let url = `api_get_queue.php?type=${type}&id=${id}`;
-    if (forceShuffle) url += '&shuffle=1';
+    queueType = type;
+    queueTypeId = id;
+    if (forceShuffle !== undefined) isShuffle = forceShuffle;
     
+    // 如果是開啟隨機，後端回傳亂序清單；否則回傳正序
+    // 傳遞 current_id 讓後端將目前歌曲固定在第一首
+    let url = `api_get_queue.php?type=${type}&id=${id}&shuffle=${isShuffle ? 1 : 0}`;
+    if (startId > 0) url += `&current_id=${startId}`;
+    else if (currentIndex >= 0 && queue[currentIndex]) url += `&current_id=${queue[currentIndex].id}`;
+    
+    console.log("Loading Queue:", url);
+
     fetch(url)
         .then(res => res.json())
         .then(data => {
@@ -73,16 +85,30 @@ function loadQueue(type, id, startId = 0, forceShuffle = false) {
                 return;
             }
             
-            queue = data;
             
-            if (forceShuffle) {
-                mode = 'sequence';
-                updateModeIcon();
+            // Silent Update Check: Is currently playing song in the new queue?
+            const currentPlayingId = (currentIndex >= 0 && queue[currentIndex]) ? queue[currentIndex].id : 0;
+            
+            queue = data; // Update Queue Data
+            
+            updateShuffleBtn();
+            updateQueueInfo();
+            renderQueueList();
+            
+            // Silent Update Check: Is currently playing song in the new queue?
+            // Only strictly preserve playback if we are NOT trying to switch to a new song (startId == current)
+            if (currentPlayingId > 0 && (startId == 0 || startId == currentPlayingId)) {
+                const newIndex = queue.findIndex(s => s.id == currentPlayingId);
+                if (newIndex !== -1) {
+                    currentIndex = newIndex;
+                    scrollToActiveQueueItem();
+                    // Don't call loadSong, just let it play
+                    console.log("Silent Update: Playing continues at index", newIndex);
+                    return;
+                }
             }
             
-            queueInfo.innerText = `Queue: ${queue.length}`;
-            
-            // Find start index
+            // Find start index (Normal Load)
             if (startId > 0) {
                 currentIndex = queue.findIndex(s => s.id == startId);
                 if (currentIndex === -1) currentIndex = 0;
@@ -103,10 +129,19 @@ function loadSong(index) {
     currentIndex = index;
     playCounted = false; // Reset flag for new song
     
+    // Update Player Bar Info
     document.getElementById('player-title').innerText = song.title;
     document.getElementById('player-artist').innerText = song.artist;
     document.getElementById('player-cover').src = song.cover;
     
+    // Update Now Playing Overlay Info
+    const bigCover = document.getElementById('np-big-cover');
+    if (bigCover) bigCover.src = song.cover;
+    
+    // Highlight in Queue List
+    renderQueueList();
+    scrollToActiveQueueItem();
+
     audio.src = song.file_path;
     playerBar.style.display = 'flex';
     
@@ -120,7 +155,6 @@ function loadSong(index) {
             updateLikeIcon(data.liked);
         })
         .catch(err => {
-            console.warn("Like Check Failed (likely guest):", err);
             updateLikeIcon(false);
         });
     
@@ -136,36 +170,37 @@ function loadSong(index) {
     }
 }
 
+// Like Button Functions
 function toggleLike() {
-    if (currentIndex === -1) return;
-    const song = queue[currentIndex];
+    if (currentIndex < 0 || currentIndex >= queue.length) return;
     
-    fetch(`api_like.php?song_id=${song.id}`, { method: 'POST' })
+    const songId = queue[currentIndex].id;
+    const isLiked = likeBtn.classList.contains('liked');
+    
+    // Use POST method as API expects
+    const formData = new FormData();
+    formData.append('song_id', songId);
+    
+    fetch('api_like.php', {
+        method: 'POST',
+        body: formData
+    })
         .then(res => res.json())
         .then(data => {
-            updateLikeIcon(data.liked);
-        });
+            if (data.hasOwnProperty('liked')) {
+                updateLikeIcon(data.liked);
+            }
+        })
+        .catch(err => console.error('Like toggle error:', err));
 }
 
-function updateLikeIcon(isLiked) {
-    if (isLiked) {
-        likeBtn.innerText = '❤️';
-        likeBtn.style.opacity = '1';
+function updateLikeIcon(liked) {
+    if (liked) {
+        likeBtn.classList.add('liked');
+        likeBtn.style.color = '#ff4757';
     } else {
-        likeBtn.innerText = '♡';
-        likeBtn.style.opacity = '0.7';
-    }
-}
-
-// Legacy support/Single play fallback
-function playSong(title, artist, src, cover, id) {
-    // Check if this song is in current queue
-    const idx = queue.findIndex(s => s.id == id);
-    if (idx !== -1) {
-        loadSong(idx);
-    } else {
-        // Not in queue, just add it temporarily or create single queue?
-        loadQueue('all', 0, id);
+        likeBtn.classList.remove('liked');
+        likeBtn.style.color = '#999';
     }
 }
 
@@ -181,23 +216,16 @@ function togglePlay() {
     }
 }
 
-// Next/Prev Logic
+// Next/Prev Logic (Linear, because specific shuffle handled by Queue structure)
 function nextSong() {
     if (queue.length === 0) return;
     
-    if (mode === 'shuffle') {
-        // Pick random index
-        let nextIdx = Math.floor(Math.random() * queue.length);
-        loadSong(nextIdx);
-    } else {
-        // Sequence or One
-        let nextIdx = currentIndex + 1;
-        if (nextIdx >= queue.length) {
-            // Loop back to start
-            nextIdx = 0; 
-        }
-        loadSong(nextIdx);
+    let nextIdx = currentIndex + 1;
+    if (nextIdx >= queue.length) {
+        // Loop back to start (default behavior for list loop)
+        nextIdx = 0; 
     }
+    loadSong(nextIdx);
 }
 
 function prevSong() {
@@ -212,7 +240,7 @@ function prevSong() {
 
 // Auto Next on Ended
 audio.addEventListener('ended', () => {
-     if (mode === 'one') {
+     if (loopMode === 'one') {
          audio.currentTime = 0;
          audio.play();
      } else {
@@ -220,28 +248,127 @@ audio.addEventListener('ended', () => {
      }
 });
 
-// Toggle Mode
-function toggleMode() {
-    if (mode === 'sequence') {
-        mode = 'one';
-    } else if (mode === 'one') {
-        mode = 'shuffle';
-    } else {
-        mode = 'sequence';
-    }
-    updateModeIcon();
+// --- New Control Logic ---
+
+function toggleShuffle() {
+    isShuffle = !isShuffle;
+    updateShuffleBtn();
+    
+    // Reload Queue with new shuffle state
+    // Try to keep current song playing
+    const currentSongId = (currentIndex >= 0 && queue[currentIndex]) ? queue[currentIndex].id : 0;
+    loadQueue(queueType, queueTypeId, currentSongId, isShuffle);
 }
 
-function updateModeIcon() {
-    if (mode === 'sequence') {
-        modeBtn.innerText = '🔁';
-        modeBtn.title = "列表循環";
-    } else if (mode === 'one') {
-        modeBtn.innerText = '🔂';
-        modeBtn.title = "單曲循環";
+function updateShuffleBtn() {
+    const btn = document.getElementById('shuffle-btn');
+    if (isShuffle) {
+        btn.style.opacity = '1';
+        btn.style.color = '#ff4757'; // Active Color
     } else {
-        modeBtn.innerText = '🔀';
-        modeBtn.title = "列表隨機";
+        btn.style.opacity = '0.5';
+        btn.style.color = '#e1e1e1';
+    }
+}
+
+function toggleLoop() {
+    if (loopMode === 'sequence') {
+        loopMode = 'one';
+    } else {
+        loopMode = 'sequence';
+    }
+    updateLoopBtn();
+}
+
+function updateLoopBtn() {
+    const btn = document.getElementById('loop-btn');
+    if (loopMode === 'sequence') {
+        btn.innerText = '🔁';
+        btn.title = "列表循環";
+        btn.style.color = '#ff4757'; // Active for List Loop means 'Looping' (default is usually Loop All)
+    } else {
+        btn.innerText = '🔂';
+        btn.title = "單曲循環";
+        btn.style.color = '#ff4757'; 
+    }
+}
+
+function updateQueueInfo() {
+    let displayText = `Q: ${queue.length}`;
+    
+    // Add context information
+    if (queueType === 'playlist' && queueTypeId > 0) {
+        // Try to get playlist name from the first song's metadata or just show "播放清單"
+        displayText = `🎵 清單 (${queue.length})`;
+    } else if (queueType === 'all') {
+        displayText = `🌐 所有歌曲 (${queue.length})`;
+    }
+    
+    queueInfo.innerText = displayText;
+    queueInfo.title = queueType === 'playlist' ? 
+        '當前播放清單內循環' : 
+        '所有歌曲';
+    
+    // Also update Now Playing overlay display
+    updatePlaylistNameDisplay();
+}
+
+function updatePlaylistNameDisplay() {
+    const playlistNameEl = document.getElementById('np-playlist-name');
+    if (!playlistNameEl) return;
+    
+    if (queueType === 'playlist' && window.currentPlaylistName) {
+        playlistNameEl.innerHTML = `📀 播放清單：<strong>${window.currentPlaylistName}</strong>`;
+        playlistNameEl.style.display = 'block';
+    } else if (queueType === 'all') {
+        playlistNameEl.innerHTML = `🌐 播放範圍：<strong>所有歌曲</strong>`;
+        playlistNameEl.style.display = 'block';
+    } else {
+        playlistNameEl.style.display = 'none';
+    }
+}
+
+// --- Now Playing Overlay Logic ---
+
+function toggleNowPlaying() {
+    const overlay = document.getElementById('now-playing-overlay');
+    if (overlay.style.display === 'none') {
+        overlay.style.display = 'flex';
+        renderQueueList();
+    } else {
+        overlay.style.display = 'none';
+    }
+}
+
+function renderQueueList() {
+    const listContainer = document.getElementById('np-queue-list');
+    const countSpan = document.getElementById('np-queue-count');
+    if (!listContainer) return;
+    
+    if (countSpan) countSpan.innerText = `(${queue.length} 首歌曲)`;
+    
+    let html = '';
+    queue.forEach((song, idx) => {
+        const isActive = (idx === currentIndex) ? 'active' : '';
+        html += `
+            <div class="np-queue-item ${isActive}" onclick="loadSong(${idx})">
+                <img src="${song.cover}" class="np-q-img" loading="lazy">
+                <div class="np-q-info">
+                    <div class="np-q-title">${song.title}</div>
+                    <div class="np-q-artist">${song.artist}</div>
+                </div>
+                ${isActive ? '<span style="color: #ff4757;">▶</span>' : ''}
+            </div>
+        `;
+    });
+    listContainer.innerHTML = html;
+}
+
+function scrollToActiveQueueItem() {
+    // Optional: Scroll to active item in overlay list
+    const activeItem = document.querySelector('.np-queue-item.active');
+    if (activeItem) {
+        activeItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 }
 
@@ -289,19 +416,31 @@ function updateVolumeIcon(vol) {
 }
 
 // Progress Bar
+const progressSlider = document.getElementById('progress-slider');
 const progressFill = document.getElementById('progress-fill');
-const currTimeParams = document.getElementById('curr-time');
-const totalTimeParams = document.getElementById('total-time');
+const currTimeDisplay = document.getElementById('curr-time');
+const totalTimeDisplay = document.getElementById('total-time');
 
+let isDragging = false;
+
+// Update Slider Range when metadata loaded
+audio.addEventListener('loadedmetadata', () => {
+    if (isFinite(audio.duration)) {
+        progressSlider.max = audio.duration;
+        totalTimeDisplay.innerText = formatTime(audio.duration);
+    }
+});
+
+// Update Slider as song plays
 audio.addEventListener('timeupdate', () => {
-    const progress = (audio.currentTime / audio.duration) * 100;
-    progressFill.style.width = `${progress}%`;
-    currTimeParams.innerText = formatTime(audio.currentTime);
-    const duration = isNaN(audio.duration) ? 0 : audio.duration;
-    totalTimeParams.innerText = formatTime(duration);
+    if (!isDragging) {
+        progressSlider.value = audio.currentTime;
+        currTimeDisplay.innerText = formatTime(audio.currentTime);
+        updateSliderVisuals();
+    }
     
     // Check Play Count (More than 60 seconds)
-    if (!playCounted && audio.currentTime > 60 && currentIndex !== -1) {
+    if (typeof playCounted !== 'undefined' && !playCounted && audio.currentTime > 60 && currentIndex !== -1) {
         const songId = queue[currentIndex].id;
         fetch(`play_count.php?id=${songId}`);
         playCounted = true;
@@ -309,14 +448,121 @@ audio.addEventListener('timeupdate', () => {
     }
 });
 
-function seek(e) {
-    const progressBar = document.getElementById('progress-bar');
-    const percent = e.offsetX / progressBar.offsetWidth;
-    audio.currentTime = percent * audio.duration;
+// Slider Interactions
+progressSlider.addEventListener('mousedown', () => isDragging = true);
+progressSlider.addEventListener('touchstart', () => isDragging = true);
+
+progressSlider.addEventListener('input', function() {
+    isDragging = true;
+    currTimeDisplay.innerText = formatTime(this.value);
+    updateSliderVisuals();
+});
+
+progressSlider.addEventListener('change', function() {
+    isDragging = false;
+    audio.currentTime = this.value;
+    updateSliderVisuals();
+});
+
+progressSlider.addEventListener('mouseup', () => {
+    if (isDragging) {
+        isDragging = false;
+        audio.currentTime = progressSlider.value;
+        updateSliderVisuals();
+    }
+});
+
+function updateSliderVisuals() {
+    const min = parseFloat(progressSlider.min) || 0;
+    const max = parseFloat(progressSlider.max) || 100;
+    const val = parseFloat(progressSlider.value) || 0;
+    
+    let percentage = 0;
+    if (max > 0) {
+        percentage = ((val - min) / (max - min)) * 100;
+    }
+
+    if (progressFill) {
+        progressFill.style.width = `${percentage}%`;
+    }
 }
 
+// Init
+updateSliderVisuals();
+
 function formatTime(seconds) {
+    if (!seconds || isNaN(seconds)) return "0:00";
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
 }
+
+// Global Interaction Fix (MouseUp outside slider)
+window.addEventListener('mouseup', () => {
+    if (typeof isDragging !== 'undefined' && isDragging) {
+        isDragging = false;
+        audio.currentTime = progressSlider.value;
+        updateSliderVisuals();
+    }
+});
+window.addEventListener('touchend', () => {
+    if (typeof isDragging !== 'undefined' && isDragging) {
+        isDragging = false;
+        audio.currentTime = progressSlider.value;
+        updateSliderVisuals();
+    }
+});
+
+// External Play Interface (for iframes)
+window.playSong = function(title, artist, src, cover, id, type, typeId, typeName) {
+    console.log("PlaySong Request:", title, id, "Shuffle:", isShuffle, "Type:", type, "TypeId:", typeId, "TypeName:", typeName);
+    
+    // Reset Play Count tracking for new song interaction
+    playCounted = false;
+
+    // If type and typeId are provided, use them; otherwise use current context
+    const targetType = type || queueType || 'all';
+    const targetTypeId = typeId !== undefined ? typeId : queueTypeId;
+
+    // Set Playlist Name if provided
+    if (typeName) {
+        window.currentPlaylistName = typeName;
+    } else if (targetType === 'all') {
+        window.currentPlaylistName = '所有歌曲';
+    }
+
+    if (isShuffle) {
+        console.log("Shuffle Play: Re-anchoring queue to", id, "with type", targetType, targetTypeId);
+        loadQueue(targetType, targetTypeId, id, true);
+    } else {
+        const idx = queue.findIndex(s => s.id == id);
+        if (idx !== -1 && targetType === queueType && targetTypeId === queueTypeId) {
+            // Already in current queue context, just play
+            loadSong(idx);
+        } else {
+            console.log("Song not in current queue or context changed, reloading with type", targetType, targetTypeId);
+            loadQueue(targetType, targetTypeId, id, false);
+        }
+    }
+};
+
+// Function to set current viewing context (called by child pages like playlist_view.php)
+window.setPlaylistContext = function(playlistId, playlistName) {
+    // Don't change if currently playing from this playlist
+    if (queueType === 'playlist' && queueTypeId == playlistId && queue.length > 0 && isPlaying) {
+        console.log("Already playing from this playlist, keeping current queue");
+        return;
+    }
+    
+    // Set context for future playback
+    queueType = 'playlist';
+    queueTypeId = playlistId;
+    window.currentPlaylistName = playlistName; // Store playlist name globally
+    
+    console.log(`Playlist context set: ${playlistName} (ID: ${playlistId})`);
+    console.log("Next song clicked from this page will play from this playlist");
+    
+    // Update display if overlay is open
+    updateQueueInfo();
+    updatePlaylistNameDisplay();
+};

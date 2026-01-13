@@ -6,7 +6,7 @@
     <title>資料顯示</title>
     <link rel="stylesheet" href="css/navCSS.css" media="all">
     <link rel="stylesheet" href="css/indexCSS.css" media="all">
-    <link rel="stylesheet" href="css/tableForm.css" media="all"> <!-- 重用樣式顯示結果 -->
+    <link rel="stylesheet" href="css/contacts.css" media="all"> <!-- 重用樣式顯示結果 -->
 
 </head>
 <body>
@@ -92,7 +92,7 @@
             </table>
 
             <div class="btn-container">
-                <input type="button" value="回上一頁" onclick="history.back();" style="background-color: #999;">
+                <input type="button" value="回上一頁" onclick="history.back();" class="btn btn-t" id="btn-back">
             </div>
 
         </main>

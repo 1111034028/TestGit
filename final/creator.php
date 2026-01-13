@@ -1,15 +1,8 @@
-<?php
-session_start();
-// 檢查是否有登入，沒登入就踢去登入頁
-if (!isset($_SESSION["login_session"]) || $_SESSION["login_session"] !== true) {
-    header("Location: login.php");
-    exit;
-}
+<?php require_once("inc/auth_guard.php");
 
 require_once("../DB/DB_open.php");
 
-// 獲取當前登入使用者的學號 (sno)
-// 假設登入時 $_SESSION["username"] 存的是 username，我們需要查出 sno
+
 $username = $_SESSION["username"];
 $sql_user = "SELECT sno FROM students WHERE username = '$username'";
 $result_user = mysqli_query($link, $sql_user);
@@ -20,15 +13,11 @@ $sno = $row_user['sno'];
 $sql_songs = "SELECT * FROM songs WHERE uploader_id = '$sno' ORDER BY upload_date DESC";
 $result_songs = mysqli_query($link, $sql_songs);
 ?>
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="utf-8" />
-    <title>創作者工作室 - 音樂串流平台</title>
-    <link rel="stylesheet" href="css/common.css">
-    <link rel="stylesheet" href="css/music.css">
-</head>
-<body>
+<?php 
+$page_title = "創作者工作室 - 音樂串流平台";
+require_once("inc/header.php"); 
+?>
+<script src="js/player_bridge.js"></script>
     <div id="content-container" style="margin-top: 20px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
             <h1>創作者工作室</h1>
@@ -94,17 +83,7 @@ $result_songs = mysqli_query($link, $sql_songs);
 
     <?php include "foot.html"; ?>
     <script>
-        function playSong(title, artist, src, cover, id) {
-            // Check if parent exists AND is not self
-            if (window.parent && window.parent !== window && window.parent.playSong) {
-                window.parent.playSong(title, artist, src, cover, id);
-            } else {
-                alert("播放器載入錯誤");
-            }
-            
-            // Increment Play Count
-            fetch(`play_count.php?id=${id}`);
-        }
+        // playSong removed - using js/player_bridge.js
     </script>
 </body>
 </html>

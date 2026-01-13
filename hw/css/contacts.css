@@ -43,22 +43,6 @@ th {
     font-weight: 600;
 }
 
-/* 內容樣式 */
-td {
-    color: var(--text-main);
-    background: #ffffff; /* 白底 */
-}
-
-/* 偶數行變色 */
-tr:nth-child(even) td {
-    background: #f8f9fa; /* 極淺灰 */
-}
-
-/* Hover 效果 */
-tr:hover td {
-    background: rgba(9, 132, 227, 0.05); /* 淺藍色 Hover */
-}
-
 /* 輸入欄位在表格中的微調 */
 table input[type="text"], 
 table input[type="number"], 
@@ -149,3 +133,34 @@ textarea:focus {
 }
 .edit-btn { background: #0984e3; color: white; margin-right: 5px; }
 .del-btn { background: #d63031; color: white; }
+
+/* 基礎按鈕樣式 */
+.btn {
+    display: inline-block;
+    padding: 12px 30px;
+    border-radius: 50px; /* 全圓角 */
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: var(--font-stack);
+    text-align: center;
+    line-height: normal;
+    outline: none;
+}
+
+
+/* 回上一頁按鈕 (Back) - 深紫色系 */
+.btn-t {
+    background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+}
+
+.btn-t:hover {
+    background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(108, 92, 231, 0.3);
+}

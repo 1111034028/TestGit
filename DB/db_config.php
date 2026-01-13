@@ -14,4 +14,3 @@ function db_close_connection($link) {
         mysqli_close($link);
     }
 }
-?>

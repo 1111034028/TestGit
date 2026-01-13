@@ -1,11 +1,6 @@
 <?php
-session_start();
+require_once("inc/auth_guard.php");
 require_once("../DB/DB_open.php");
-
-if (!isset($_SESSION["login_session"]) || $_SESSION["login_session"] !== true) {
-    header("Location: login.php");
-    exit;
-}
 
 if (isset($_GET['id'])) {
     $song_id = $_GET['id'];
@@ -17,9 +12,9 @@ if (isset($_GET['id'])) {
     $row_user = mysqli_fetch_assoc($result_user);
     $sno = $row_user['sno'];
     
-    // 檢查歌曲是否屬於該使用者 (或是否為管理員 - 暫未實作管理員標記，先檢查擁有權)
+    // 檢查歌曲是否屬於該使用者 (此專案未實作完整管理員權限，暫時允許特定管理員刪除)
     // 為了之後方便，若 sno 為特定管理員ID也可刪除 (例如 S001)
-    // 假設 S001 是 super admin
+    // 假設 S001 是超級管理員
     $is_admin = ($sno === 'S001');
 
     if ($is_admin) {
