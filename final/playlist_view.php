@@ -1,33 +1,22 @@
 <?php
 require_once("inc/auth_guard.php");
-
 require_once("../DB/DB_open.php");
+require_once("../DB/db_helper.php");
 
 $playlist_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $user_id = $_SESSION['sno'];
 
-// 取得歌單資訊
-$sql = "SELECT * FROM playlists WHERE id = $playlist_id AND user_id = '$user_id'";
-$result = mysqli_query($link, $sql);
-
-if (mysqli_num_rows($result) == 0) {
+$playlist = get_playlist_info($link, $playlist_id, $user_id);
+if (!$playlist) {
     die("找不到歌單或無權限");
 }
 
-$playlist = mysqli_fetch_assoc($result);
+$result_songs = get_playlist_songs($link, $playlist_id);
 
-// 取得歌曲
-$sql_songs = "SELECT s.*, ps.id as link_id FROM songs s 
-              JOIN playlist_songs ps ON s.id = ps.song_id 
-              WHERE ps.playlist_id = $playlist_id 
-              ORDER BY ps.sort_order ASC, ps.id ASC";
-$result_songs = mysqli_query($link, $sql_songs);
-?>
-<?php
 $page_title = $playlist['name'] . " - 歌單";
 require_once("inc/header.php");
+require_once("inc/modal.php");
 ?>
-    <!-- Nav removed -->
 
     <div id="content-container">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -35,18 +24,21 @@ require_once("inc/header.php");
                 <a href="my_playlists.php" style="color: #aaa; text-decoration: none; margin-bottom: 8px; font-size: 0.9rem;">&lt; 返回我的歌單</a>
                 <div style="display: flex; align-items: center;">
                     <h1 style="margin: 0;"><?php echo htmlspecialchars($playlist['name']); ?></h1>
-                    <button class="btn-secondary" style="padding: 4px 10px; font-size: 0.85rem; margin-left: 15px; border-radius: 20px; border: 1px solid #555;" onclick="openRenameModal(<?php echo $playlist_id; ?>, '<?php echo htmlspecialchars($playlist['name'], ENT_QUOTES); ?>')">✎ 編輯</button>
+                    <?php if ($playlist['name'] !== 'My Favorites'): ?>
+                        <button class="btn-secondary" style="padding: 4px 10px; font-size: 0.85rem; margin-left: 15px; border-radius: 20px; border: 1px solid #555;" 
+                                onclick='openRenameModal(<?php echo $playlist_id; ?>, <?php echo json_encode($playlist["name"]); ?>)'>✎ 編輯</button>
+                    <?php endif; ?>
                 </div>
             </div>
             <div style="display: flex; gap: 10px;">
-                 <!-- 刪除歌單 -->
-                 <form action="playlist_act.php" method="post" onsubmit="return confirm('確定要刪除整個歌單嗎？');">
-                    <input type="hidden" name="action" value="delete">
-                    <input type="hidden" name="playlist_id" value="<?php echo $playlist_id; ?>">
-                    <button type="submit" class="btn-secondary" style="border-color: #d63031; color: #d63031;">刪除歌單</button>
-                </form>
-                <!-- 播放歌單按鈕 -->
-                <button class="btn-primary" onclick="playPlaylist(<?php echo $playlist_id; ?>)">▶ 播放全部</button>
+                 <?php if ($playlist['name'] !== 'My Favorites'): ?>
+                     <form action="playlist_act.php" method="post" onsubmit="event.preventDefault(); const form = this; openModal('刪除歌單', '確定要刪除整個歌單嗎？', () => form.submit(), true);">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="playlist_id" value="<?php echo $playlist_id; ?>">
+                        <button type="submit" class="btn-secondary" style="border-color: #d63031; color: #d63031;">刪除歌單</button>
+                    </form>
+                <?php endif; ?>
+                <button class="btn-primary" onclick='playPlaylist(<?php echo $playlist_id; ?>, <?php echo json_encode($playlist["name"]); ?>)'>▶ 播放全部</button>
             </div>
         </div>
 
@@ -56,39 +48,48 @@ require_once("inc/header.php");
                     <th width="50">#</th>
                     <th>歌曲</th>
                     <th>歌手</th>
-                    <th>操作</th>
+                    <th width="80">操作</th>
                 </tr>
             </thead>
             <tbody>
                 <?php
-                if (mysqli_num_rows($result_songs) > 0) {
+                if ($result_songs && mysqli_num_rows($result_songs) > 0) {
                     $count = 1;
                     while ($row = mysqli_fetch_assoc($result_songs)) {
                         $cover = "get_cover.php?id=" . $row['id'];
+                        $is_pinned = $row['is_pinned'];
                 ?>
                     <tr>
-                        <td><?php echo $count++; ?></td>
+                        <td>
+                            <?php echo $count++; ?>
+                            <?php if($is_pinned) echo " <span style='color:var(--accent-color); font-size:0.8rem;'>📌</span>"; ?>
+                        </td>
                         <td style="display: flex; align-items: center; gap: 10px; cursor: pointer;"
                             onclick="playContextSong('<?php echo htmlspecialchars($row['title'], ENT_QUOTES); ?>', 
-                                              '<?php echo htmlspecialchars($row['artist'], ENT_QUOTES); ?>', 
-                                              'music/<?php echo $row['file_path']; ?>', 
-                                              '<?php echo $cover; ?>', 
-                                              <?php echo $row['id']; ?>,
-                                              'playlist',
-                                              <?php echo $playlist_id; ?>,
-                                              '<?php echo htmlspecialchars($playlist['name'], ENT_QUOTES); ?>')"
+                                               '<?php echo htmlspecialchars($row['artist'], ENT_QUOTES); ?>', 
+                                               'music/<?php echo $row['file_path']; ?>', 
+                                               '<?php echo $cover; ?>', 
+                                               <?php echo $row['id']; ?>,
+                                               'playlist',
+                                               <?php echo $playlist_id; ?>,
+                                               '<?php echo htmlspecialchars($playlist['name'], ENT_QUOTES); ?>')"
                             title="點擊播放">
                             <img src="<?php echo $cover; ?>" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
                             <?php echo htmlspecialchars($row['title']); ?>
                         </td>
                         <td><?php echo htmlspecialchars($row['artist']); ?></td>
                         <td>
-                            <form action="playlist_act.php" method="post" style="display: inline;">
-                                <input type="hidden" name="action" value="remove_song">
-                                <input type="hidden" name="playlist_id" value="<?php echo $playlist_id; ?>">
-                                <input type="hidden" name="song_id" value="<?php echo $row['id']; ?>">
-                                <button type="submit" class="btn-secondary" style="font-size: 0.8rem; padding: 4px 8px;">移除</button>
-                            </form>
+                            <div class="row-settings-dropdown">
+                                <button class="btn-secondary" style="padding: 2px 8px; font-size: 0.8rem;" onclick="toggleDropdown(event, this)">⚙</button>
+                                <div class="row-dropdown-menu">
+                                    <div class="row-dropdown-item" onclick="togglePinSong(<?php echo $row['link_id']; ?>, <?php echo $is_pinned; ?>)">
+                                        <?php echo $is_pinned ? '取消釘選' : '釘選'; ?>
+                                    </div>
+                                    <div class="row-dropdown-item" style="color: #ff7675;" onclick="removeSong(<?php echo $playlist_id; ?>, <?php echo $row['id']; ?>)">
+                                        移除
+                                    </div>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                 <?php
@@ -101,30 +102,11 @@ require_once("inc/header.php");
         </table>
     </div>
 
-    <script src="js/player_bridge.js?v=5"></script>
-    <script>
-        // Auto-context setting REMOVED to separate viewing from playback logic
-        
-        function playPlaylist(pid) {
-            // Update context manually when "Play All" is clicked
-            if (window.parent && window.parent.setPlaylistContext) {
-                 window.parent.setPlaylistContext(pid, '<?php echo htmlspecialchars($playlist['name'], ENT_QUOTES); ?>');
-            }
-            
-            // Call loadQueue
-            if (window.parent && window.parent.loadQueue) {
-                window.parent.loadQueue('playlist', pid, 0); // 0 means start from beginning
-            } else {
-                alert("播放器未就緒");
-            }
-        }
-    </script>
-
     <!-- Rename Modal -->
-    <div id="rename-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center;">
-        <div style="background: #282828; padding: 20px; border-radius: 8px; width: 300px; text-align: center;">
+    <div id="rename-modal" class="modal-overlay">
+        <div class="modal-box" style="display: block; transform: none;">
             <h3>重新命名播放清單</h3>
-            <form id="rename-form" onsubmit="return submitRename()">
+            <form id="rename-form" onsubmit="submitRename(event); return false;">
                 <input type="hidden" id="rename-playlist-id">
                 <input type="text" id="rename-input" style="width: 100%; padding: 10px; margin-bottom: 20px; background: #444; color: white; border: none; border-radius: 4px; box-sizing: border-box;" placeholder="輸入新名稱" required>
                 <div style="display: flex; justify-content: space-between;">
@@ -135,45 +117,8 @@ require_once("inc/header.php");
         </div>
     </div>
 
-    <script>
-        function openRenameModal(id, currentName) {
-            document.getElementById('rename-modal').style.display = 'flex';
-            document.getElementById('rename-playlist-id').value = id;
-            document.getElementById('rename-input').value = currentName;
-            document.getElementById('rename-input').focus();
-        }
-
-        async function submitRename() {
-            event.preventDefault();
-            const id = document.getElementById('rename-playlist-id').value;
-            const name = document.getElementById('rename-input').value;
-            
-            const formData = new FormData();
-            formData.append('action', 'rename');
-            formData.append('playlist_id', id);
-            formData.append('name', name);
-            formData.append('ajax', '1');
-
-            try {
-                const response = await fetch('playlist_act.php', {
-                    method: 'POST',
-                    body: formData
-                });
-                const text = await response.text();
-                
-                if (text.trim() === 'SUCCESS') {
-                    location.reload();
-                } else {
-                    alert('更名失敗: ' + text);
-                }
-            } catch (err) {
-                console.error(err);
-                alert('發生錯誤');
-            }
-            return false;
-        }
-    </script>
-
+    <script src="js/player_bridge.js?v=5"></script>
+    <script src="js/playlist_manager.js"></script>
     <?php include "foot.html"; ?>
 </body>
 </html>

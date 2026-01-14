@@ -32,11 +32,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION["reg_status"] = "error";
         header("Location: register.php");
     } else {
-        // 新增資料
+        // 新增資料 (直接儲存明文密碼，不加密)
         $insert_sql = "INSERT INTO students (sno, name, address, birthday, username, password) 
                        VALUES ('$sno', '$name', '$address', '$birthday', '$username', '$password')";
         
         if (mysqli_query($link, $insert_sql)) {
+            // 自動建立 "My Favorites" 播放清單
+            $pl_sql = "INSERT INTO playlists (user_id, name) VALUES ('$sno', 'My Favorites')";
+            mysqli_query($link, $pl_sql);
+
             $_SESSION["reg_msg"] = "註冊成功！請使用新帳號登入。";
             $_SESSION["reg_status"] = "success";
             // 可以選擇直接跳轉登入頁，或留在註冊頁顯示成功

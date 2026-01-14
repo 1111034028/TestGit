@@ -14,11 +14,19 @@
         }
         .login-container { /* 修改自 #content-container */
             max-width: 600px;
+            margin: 50px auto; /* Center alignment */
         }
     </style>
 </head>
 <body class="login-body">
-    <!-- 移除導覽列 -->
+    <!-- Header with Hamburger and Title -->
+    <div id="page-header" style="display: none; align-items: center; padding: 15px 25px; background: #121212; color: white; border-bottom: 1px solid #282828;">
+        <a href="index.php" style="color:white; text-decoration:none; display:flex; align-items:center;">
+             <div style="font-size: 1.5rem; margin-right: 20px; cursor: pointer;">☰</div>
+             <div style="font-weight: bold; font-size: 1.2rem; letter-spacing: 1px;">Music Stream</div>
+        </a>
+    </div>
+    <script src="js/auth_shell.js"></script>
 
     <div class="login-container">
         <h1 style="text-align:center;">註冊新帳戶</h1>

@@ -1,62 +1,69 @@
 <?php
 require_once("inc/auth_guard.php");
-
 require_once("../DB/DB_open.php");
+require_once("../DB/db_helper.php");
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // 取得 POST 資料
     $sno = $_POST['sno'];
-    $new_username = mysqli_real_escape_string($link, $_POST['username']); // 來自表單的新使用者名稱
-    $name = mysqli_real_escape_string($link, $_POST['name']);
-    $address = mysqli_real_escape_string($link, $_POST['address']);
-    $birthday = mysqli_real_escape_string($link, $_POST['birthday']);
-    $password = mysqli_real_escape_string($link, $_POST['password']);
-    
-    // 安全檢查：確保 POST sno 與登入使用者相符
-    // 我們依靠 session username 來識別 *當前* 使用者，然後再進行變更
     $current_session_username = $_SESSION["username"];
-    $check_sql = "SELECT sno FROM students WHERE username = '$current_session_username'";
-    $check_result = mysqli_query($link, $check_sql);
-    $check_row = mysqli_fetch_assoc($check_result);
     
-    if ($check_row['sno'] !== $sno) {
+    // 安全檢查
+    $user = get_user_info($link, $current_session_username);
+    if (!$user || $user['sno'] !== $sno) {
         die("安全檢查失敗：您無法編輯此個人資料。");
     }
+
+    $new_username = $_POST['username'];
+    $name = $_POST['name'];
+    $address = $_POST['address'];
+    $birthday = $_POST['birthday'];
+    $password_plain = $_POST['password'];
     
-    // 處理頭貼上傳
-    $picture_sql_fragment = "";
+    // 密碼處理 (依需求儲存明文)
+    $password_save = $password_plain;
+    
+    $update_data = [
+        'username' => $new_username,
+        'name' => $name,
+        'address' => $address,
+        'birthday' => $birthday,
+        'password' => $password_save
+    ];
+    
+    // 處理頭貼
     if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] == 0) {
         $upload_dir = "img/avatars/";
         if (!file_exists($upload_dir)) mkdir($upload_dir, 0777, true);
         
-        $ext = pathinfo($_FILES['avatar']['name'], PATHINFO_EXTENSION);
-        $new_filename = "avatar_" . $sno . "_" . time() . "." . $ext;
-        $target_file = $upload_dir . $new_filename;
+        $ext = strtolower(pathinfo($_FILES['avatar']['name'], PATHINFO_EXTENSION));
+        // 計算檔案雜湊值 (MD5) 用於重複檢測
+        $file_hash = md5_file($_FILES['avatar']['tmp_name']);
+        $new_filename = $file_hash . "." . $ext;
+        $target_path = $upload_dir . $new_filename;
         
-        if (move_uploaded_file($_FILES['avatar']['tmp_name'], $target_file)) {
-            $picture_sql_fragment = ", picture = '$new_filename'";
-            $_SESSION['picture'] = $new_filename; // 立即更新 Session
+        // 檢查是否已存在相同內容的檔案
+        if (file_exists($target_path)) {
+            // 若存在，直接使用該檔案 (去重)
+            $update_data['picture'] = $new_filename;
+            $_SESSION['picture'] = $new_filename;
+        } else {
+            // 若不存在，則儲存新檔
+            if (move_uploaded_file($_FILES['avatar']['tmp_name'], $target_path)) {
+                $update_data['picture'] = $new_filename;
+                $_SESSION['picture'] = $new_filename;
+            }
         }
     }
 
-    // 更新資料庫
-    $sql = "UPDATE students SET 
-            username = '$new_username',
-            name = '$name', 
-            address = '$address', 
-            birthday = '$birthday', 
-            password = '$password' 
-            $picture_sql_fragment
-            WHERE sno = '$sno'";
-            
-    if (mysqli_query($link, $sql)) {
-        // 如果使用者名稱已變更，更新 Session
+    if (db_update($link, 'students', $update_data, "sno = '" . mysqli_real_escape_string($link, $sno) . "'")) {
         if ($new_username !== $current_session_username) {
             $_SESSION["username"] = $new_username;
         }
-        echo "<script>alert('資料更新成功！'); window.location.href='profile.php';</script>";
+        // Pass new picture filename to allow frontend instant update
+        $new_pic = isset($update_data['picture']) ? $update_data['picture'] : ''; 
+        header("Location: profile.php?success=profile_update&new_pic=" . $new_pic);
     } else {
-        echo "Error: " . $sql . "<br>" . mysqli_error($link);
+        header("Location: profile.php?error=profile_update");
     }
 } else {
     header("Location: profile.php");

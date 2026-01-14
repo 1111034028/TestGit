@@ -1,56 +1,22 @@
 <?php
 require_once("inc/auth_guard.php");
 require_once("../DB/DB_open.php");
+require_once("../DB/db_helper.php");
 
-$user_id = mysqli_real_escape_string($link, $_SESSION['sno']);
-// 分頁邏輯
-$limit = 5; // 使用者卡片的限制較小
+$user_id = $_SESSION['sno'];
+$limit = 5;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-if ($page < 1) $page = 1;
-$offset = ($page - 1) * $limit;
 
-// 計數
-$sql_count = "SELECT COUNT(*) as total FROM contact_messages WHERE user_id = '$user_id'";
-$res_count = mysqli_query($link, $sql_count);
-$row = mysqli_fetch_assoc($res_count);
-$total_records = $row['total'];
+$total_records = get_total_count($link, 'contact_messages', "user_id = '$user_id'");
 $total_pages = ceil($total_records / $limit);
 
-$sql = "SELECT * FROM contact_messages WHERE user_id = '$user_id' 
-        ORDER BY FIELD(status, 'new', 'read', 'closed'), created_at DESC 
-        LIMIT $offset, $limit";
-$result = mysqli_query($link, $sql);
+$result = db_get_paginated($link, 'contact_messages', $page, $limit, 
+    "FIELD(status, 'new', 'read', 'closed'), created_at DESC", 
+    "user_id = '$user_id'");
 
-if (!$result) {
-    die("Query Failed: " . mysqli_error($link));
-}
+if (isset($_GET['ajax_list'])) :
+    session_write_close();
 ?>
-<?php if (!isset($_GET['ajax_list'])): ?>
-<?php
-$page_title = "我的訊息 - 客服中心";
-$extra_css = '<style>
-        .msg-list { max-width: 800px; margin: 0 auto; }
-        .msg-card {
-            background: #282828; padding: 20px; border-radius: 10px; margin-bottom: 20px;
-            transition: transform 0.2s; cursor: pointer; border: 1px solid #333;
-        }
-        .msg-card:hover { transform: translateY(-3px); border-color: var(--accent-color); }
-        .msg-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9rem; color: #aaa; }
-        .msg-status { padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; }
-        .status-new { background: #ff7675; color: white; }
-        .status-read { background: #74b9ff; color: black; } /* 藍色表示處理中 */
-        .status-closed { background: #b2bec3; color: black; } /* 灰色表示已完成 */
-    </style>';
-require_once("inc/header.php");
-?>
-    <!-- 為 App Shell 移除導覽列 -->
-
-    <div id="content-container" style="margin: 40px auto;">
-        <h2 style="text-align: center; margin-bottom: 30px;">我的客服記錄</h2>
-        
-        <div id="list-container">
-<?php endif; ?>
-        
         <div class="msg-list">
             <?php if(mysqli_num_rows($result) > 0): ?>
                 <?php while($row = mysqli_fetch_assoc($result)): ?>
@@ -58,14 +24,10 @@ require_once("inc/header.php");
                         <div class="msg-header">
                             <span><?php echo $row['created_at']; ?></span>
                             <?php 
-                                $s_class = ''; $s_text = '';
-                                if($row['status'] == 'new') { $s_class='status-new'; $s_text='已送出'; }
-                                elseif($row['status'] == 'read') { $s_class='status-read'; $s_text='處理中'; }
-                                else { $s_class='status-closed'; $s_text='已完成'; }
+                                $status_map = ['new' => ['已送出', 'status-new'], 'read' => ['處理中', 'status-read'], 'closed' => ['已完成', 'status-closed']];
+                                $s = $status_map[$row['status']] ?? ['未知', ''];
                             ?>
-                            <span class="msg-status <?php echo $s_class; ?>">
-                                <?php echo $s_text; ?>
-                            </span>
+                            <span class="msg-status <?php echo $s[1]; ?>"><?php echo $s[0]; ?></span>
                         </div>
                         <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 5px;">
                             [<?php echo htmlspecialchars($row['category']); ?>]
@@ -83,57 +45,89 @@ require_once("inc/header.php");
             <?php endif; ?>
         </div>
 
-        <!-- 分頁 -->
-        <div style="margin-top: 20px; text-align: center;">
-            <?php if ($total_pages > 1): ?>
-                <?php if ($page > 1): ?>
-                    <a href="my_messages.php?page=1" class="btn-secondary" style="padding: 5px 10px;">&laquo; 第一頁</a>
-                    <a href="my_messages.php?page=<?php echo $page - 1; ?>" class="btn-secondary" style="padding: 5px 10px;">&lt; 上一頁</a>
-                <?php endif; ?>
-
-                <span style="margin: 0 10px; color: #aaa;">第 <?php echo $page; ?> 頁 / 共 <?php echo $total_pages; ?> 頁</span>
-
-                <?php if ($page < $total_pages): ?>
-                    <a href="my_messages.php?page=<?php echo $page + 1; ?>" class="btn-secondary" style="padding: 5px 10px;">下一頁 &gt;</a>
-                    <a href="my_messages.php?page=<?php echo $total_pages; ?>" class="btn-secondary" style="padding: 5px 10px;">最末頁 &raquo;</a>
-                <?php endif; ?>
-            <?php endif; ?>
+        <?php if ($total_pages > 1): ?>
+        <div class="pagination-container">
+            <a href="my_messages.php?page=1" class="page-btn <?php echo ($page <= 1) ? 'disabled' : ''; ?>">&laquo;</a>
+            <a href="#" onclick="loadList(<?php echo $page-1; ?>); return false;" class="page-btn <?php echo ($page <= 1) ? 'disabled' : ''; ?>">&lsaquo;</a>
+            <span class="page-info"><?php echo $page; ?> / <?php echo $total_pages; ?></span>
+            <a href="#" onclick="loadList(<?php echo $page+1; ?>); return false;" class="page-btn <?php echo ($page >= $total_pages) ? 'disabled' : ''; ?>">&rsaquo;</a>
+            <a href="my_messages.php?page=<?php echo $total_pages; ?>" class="page-btn <?php echo ($page >= $total_pages) ? 'disabled' : ''; ?>">&raquo;</a>
         </div>
-<?php if (!isset($_GET['ajax_list'])): ?>
-        </div> <!-- End #list-container -->
+        <?php endif; ?>
+<?php 
+    exit; 
+endif; 
+
+$page_title = "我的訊息 - 客服中心";
+$extra_css = '<style>
+        .msg-list { max-width: 800px; margin: 0 auto; }
+        .msg-card {
+            background: #282828; padding: 20px; border-radius: 10px; margin-bottom: 20px;
+            transition: transform 0.2s; cursor: pointer; border: 1px solid #333;
+        }
+        .msg-card:hover { transform: translateY(-3px); border-color: var(--accent-color); }
+        .msg-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9rem; color: #aaa; }
+        .msg-status { padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; }
+        .status-new { background: #ff7675; color: white; }
+        .status-read { background: #74b9ff; color: black; }
+        .status-closed { background: #b2bec3; color: black; }
+    </style>';
+require_once("inc/header.php");
+?>
+    <div id="content-container" style="margin: 40px auto; max-width: 800px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h2 style="margin: 0;">我的客服記錄</h2>
+            <a href="contact_us.php" class="btn-primary" style="font-size: 0.9rem; padding: 8px 20px;">
+                + 發送新訊息
+            </a>
+        </div>
+        
+        <div id="list-container">
+            <?php 
+            $_GET['ajax_list'] = 1; 
+            include "my_messages.php"; 
+            ?>
+        </div>
     </div>
 
     <script>
-        document.addEventListener('click', function(e) {
-            const link = e.target.closest('a');
-            if (link && link.href && link.href.includes('page=') && link.href.includes('my_messages.php')) {
-                e.preventDefault();
-                loadList(link.href);
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('success') === 'contact') {
+                if (window.notifyChatChange) window.notifyChatChange(); // Notify admin tabs
+                showAlert('成功', '感將您的回報！客服人員將盡快聯絡您。', () => {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                });
             }
         });
 
-        function refreshList() {
-             loadList(window.location.href);
-        }
-
-        // 每 10 秒自動刷新
-        setInterval(refreshList, 10000);
-
-        function loadList(url) {
+        function loadList(page) {
             const listContainer = document.getElementById('list-container');
-            const fetchUrl = url + (url.includes('?') ? '&' : '?') + 'ajax_list=1';
-            
-            fetch(fetchUrl)
+            fetch(`my_messages.php?ajax_list=1&page=${page}`)
                 .then(response => response.text())
                 .then(html => {
                     listContainer.innerHTML = html;
                 })
                 .catch(err => console.error(err));
         }
+        
+        // Auto refresh
+        setInterval(() => {
+            const activePage = document.querySelector('.page-info') ? document.querySelector('.page-info').innerText.split(' / ')[0] : 1;
+            loadList(activePage);
+        }, 1000);
+
+        // Instant sync
+        if (window.onChatSync) {
+            window.onChatSync(() => {
+                const info = document.querySelector('.page-info');
+                loadList(info ? info.innerText.split(' / ')[0] : 1);
+            });
+        }
     </script>
 
+    <?php include "inc/modal.php"; ?>
     <?php include "foot.html"; ?>
 </body>
 </html>
-<?php endif; ?>
 <?php require_once("../DB/DB_close.php"); ?>

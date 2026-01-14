@@ -1,71 +1,52 @@
 <?php
 require_once("inc/auth_guard.php");
-
 require_once("../DB/DB_open.php");
-
-// 獲取使用者 sno (用於驗證權限)
-$username = $_SESSION["username"];
-$sql_user = "SELECT sno FROM students WHERE username = '$username'";
-$result_user = mysqli_query($link, $sql_user);
-$row_user = mysqli_fetch_assoc($result_user);
-$sno = $row_user['sno'];
+require_once("../DB/db_helper.php");
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $id = $_POST['id'];
-    $title = mysqli_real_escape_string($link, $_POST['title']);
-    $artist = mysqli_real_escape_string($link, $_POST['artist']);
-    $genre = mysqli_real_escape_string($link, $_POST['genre']);
+    $id = intval($_POST['id']);
+    $username = $_SESSION["username"];
+    $user = get_user_info($link, $username);
+    $sno = $user['sno'] ?? '';
 
-    // 驗證擁有權
-    $check_sql = "SELECT * FROM songs WHERE id = '$id' AND uploader_id = '$sno'";
-    $check_result = mysqli_query($link, $check_sql);
-    if (mysqli_num_rows($check_result) == 0) {
-        die("無權限或歌曲不存在");
+    $from = $_POST['from'] ?? 'creator';
+    $back_url = ($from === 'admin') ? 'admin.php' : 'creator.php';
+
+    // 驗證擁有權 (上傳者本人或管理員)
+    if ($user['role'] !== 'admin') {
+        $check_sql = "SELECT id FROM songs WHERE id = $id AND uploader_id = '$sno'";
+        if (mysqli_num_rows(mysqli_query($link, $check_sql)) == 0) {
+            die("無權限或歌曲不存在");
+        }
     }
     
-    // 構建更新 SQL
-    $update_fields = array(
-        "title = '$title'",
-        "artist = '$artist'",
-        "genre = '$genre'"
-    );
+    $update_data = [
+        'title' => $_POST['title'],
+        'artist' => $_POST['artist'],
+        'genre' => $_POST['genre']
+    ];
 
-    // 處理音樂檔案更新
-    // 如果有上傳新檔案
+    // 音樂檔案
     if (isset($_FILES['music_file']) && $_FILES['music_file']['error'] == 0) {
-        // 設定上傳目錄
         $target_dir = "music/";
-        if (!file_exists($target_dir)) {
-            mkdir($target_dir, 0777, true);
-        }
+        if (!file_exists($target_dir)) mkdir($target_dir, 0777, true);
         
-        // 生成唯一檔名
-        $file_ext = strtolower(pathinfo($_FILES["music_file"]["name"], PATHINFO_EXTENSION));
-        $new_filename = uniqid() . "." . $file_ext;
-        $target_file = $target_dir . $new_filename;
-        
-        if (move_uploaded_file($_FILES["music_file"]["tmp_name"], $target_file)) {
-            $update_fields[] = "file_path = '$new_filename'";
+        $new_filename = uniqid() . "." . pathinfo($_FILES["music_file"]["name"], PATHINFO_EXTENSION);
+        if (move_uploaded_file($_FILES["music_file"]["tmp_name"], $target_dir . $new_filename)) {
+            $update_data['file_path'] = $new_filename;
         }
     }
 
-    // 處理封面檔案更新
-    // 如果有上傳新封面
+    // 封面檔案
     if (isset($_FILES['cover_file']) && $_FILES['cover_file']['error'] == 0) {
-        $cover_type = $_FILES["cover_file"]["type"];
-        $cover_content = mysqli_real_escape_string($link, file_get_contents($_FILES["cover_file"]["tmp_name"]));
-        
-        $update_fields[] = "cover_image = '$cover_content'";
-        $update_fields[] = "cover_type = '$cover_type'";
+        $update_data['cover_image'] = file_get_contents($_FILES["cover_file"]["tmp_name"]);
+        $update_data['cover_type'] = $_FILES["cover_file"]["type"];
     }
 
-    // 執行更新
-    $sql = "UPDATE songs SET " . implode(", ", $update_fields) . " WHERE id = '$id'";
-
-    if (mysqli_query($link, $sql)) {
-        echo "<script>alert('更新成功！'); window.location.href='creator.php';</script>";
+    if (db_update($link, 'songs', $update_data, "id = $id")) {
+        header("Location: $back_url" . (strpos($back_url, '?') !== false ? '&' : '?') . "success=update");
     } else {
-        echo "Error updating record: " . mysqli_error($link);
+        header("Location: $back_url" . (strpos($back_url, '?') !== false ? '&' : '?') . "error=update");
     }
 } else {
     header("Location: creator.php");

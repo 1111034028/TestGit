@@ -7,7 +7,7 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 
 if (!isset($_SESSION["login_session"]) || $_SESSION["login_session"] !== true) {
-    header("Location: login.php");
+    header("Location: login.php?error=auth");
     exit;
 }
 

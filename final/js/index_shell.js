@@ -7,9 +7,97 @@ const modeBtn = document.getElementById('mode-btn');
 const likeBtn = document.getElementById('like-btn'); 
 const queueInfo = document.getElementById('queue-info');
 
+// Expose internal state saving for child pages
+window.savePageState = function(fullUrl) {
+    try {
+        // More robust URL extraction
+        // We want the filename and the query string
+        let relativeUrl = '';
+        if (fullUrl.includes('?')) {
+            const parts = fullUrl.split('/');
+            relativeUrl = parts.pop(); 
+        } else {
+            relativeUrl = fullUrl.split('/').pop();
+        }
+        
+        // Ignore Technical Pages
+        if (!relativeUrl || relativeUrl === 'about:blank' || relativeUrl.includes('logout.php') || relativeUrl.includes('login.php')) return;
+        
+        console.log("Saving State (Direct):", relativeUrl);
+        sessionStorage.setItem('lastPage_v2', relativeUrl);
+             
+         // Update Active State
+         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+         const navHome = document.getElementById('nav-home');
+         const navSearch = document.getElementById('nav-search');
+         const navLibrary = document.getElementById('nav-library');
+         const navCreator = document.getElementById('nav-creator');
+         const navProfile = document.getElementById('nav-profile');
+         
+         if (relativeUrl.includes('index.php') && navHome) navHome.classList.add('active');
+         else if (relativeUrl.includes('search') && navSearch) navSearch.classList.add('active');
+         else if (relativeUrl.includes('playlist') && navLibrary) navLibrary.classList.add('active');
+         else if (relativeUrl.includes('creator') && navCreator) navCreator.classList.add('active');
+         else if (relativeUrl.includes('profile') && navProfile) navProfile.classList.add('active');
+         else if (relativeUrl.includes('my_messages') && navProfile) navProfile.classList.add('active'); 
+    } catch (e) {
+        console.warn("State Save Error:", e);
+    }
+};
+
+// User Menu Toggle
+window.toggleUserMenu = function() {
+    const menu = document.getElementById('user-dropdown');
+    if (!menu) return;
+    
+    if (menu.style.display === 'block') {
+        menu.style.display = 'none';
+        document.removeEventListener('click', closeUserMenuOnClick);
+    } else {
+        menu.style.display = 'block';
+        setTimeout(() => {
+            document.addEventListener('click', closeUserMenuOnClick);
+        }, 0);
+    }
+};
+
+function closeUserMenuOnClick(e) {
+    const menu = document.getElementById('user-dropdown');
+    const btn = document.getElementById('user-menu-btn');
+    if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+        menu.style.display = 'none';
+        document.removeEventListener('click', closeUserMenuOnClick);
+    }
+}
+
+// Monitor Iframe Navigation (Backup)
+const contentFrame = document.getElementById('content-frame');
+if (contentFrame) {
+    contentFrame.addEventListener('load', function() {
+        try {
+            const currentUrl = contentFrame.contentWindow.location.href;
+            if (currentUrl !== 'about:blank') {
+                window.savePageState(currentUrl);
+            }
+        } catch (e) {}
+    });
+}
+
+// --- Navigation Logic ---
+
 // --- Navigation Logic ---
 function navigate(url) {
     document.getElementById('content-frame').src = url;
+    
+    // Save State
+    // Use the same consistent function? Or just set item.
+    // Let's use the savePageState helper if possible, but here we have the URL directly.
+    // Ensure we scrape the relative part cleanly.
+    if (window.savePageState) {
+        window.savePageState(url);
+    } else {
+         sessionStorage.setItem('lastPage_v2', url);
+    }
     
     // Update Active State
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -565,4 +653,49 @@ window.setPlaylistContext = function(playlistId, playlistName) {
     // Update display if overlay is open
     updateQueueInfo();
     updatePlaylistNameDisplay();
+};
+
+// Restore Last Page on Refresh
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        try {
+            // Try sessionStorage first
+            const lastPage = sessionStorage.getItem('lastPage_v2'); // Use v2 key
+            
+            console.log("Checking Page Persistence (v2):", lastPage);
+        
+            if (lastPage && lastPage !== 'about:blank' && !lastPage.includes('logout.php') && !lastPage.includes('login.php')) {
+                console.log("Restoring Page:", lastPage);
+                // Check if iframe already has this page (browser restore)
+                const currentFrameSrc = document.getElementById('content-frame').contentWindow.location.href;
+                if (currentFrameSrc.includes(lastPage)) {
+                     console.log("Iframe already at correct page, skipping navigate.");
+                } else {
+                     navigate(lastPage);
+                }
+            } else {
+                // Default to Home
+                console.log("No state found, loading Home.");
+                navigate('index.php?inner=1');
+            }
+        } catch(e) {
+            console.warn("Restoration Error:", e);
+            navigate('index.php?inner=1');
+        }
+    }, 150); // Increased timeout slightly
+});
+
+// Function to refresh user avatar (called by child pages)
+window.refreshUserAvatar = function(newSrc) {
+    const avatar = document.getElementById('user-avatar-img');
+    // If we only have the filename, prepend path
+    if (newSrc && !newSrc.includes('/')) {
+        newSrc = 'img/avatars/' + newSrc;
+    }
+    
+    if (avatar && newSrc) {
+        // Add timestamp to force cache bust
+        avatar.src = newSrc + '?t=' + new Date().getTime();
+        console.log("Avatar updated via refreshUserAvatar");
+    }
 };

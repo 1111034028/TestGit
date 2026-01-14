@@ -3,10 +3,22 @@
 $page_title = "服務條款 - 音樂串流平台";
 require_once("inc/header.php");
 ?>
-<body>
+<body style="background-color: #121212; color: white;">
+    <!-- Header with Hamburger and Title (Only show if standalone/top-level) -->
+    <div id="page-header" style="display: none; align-items: center; padding: 15px 25px; background: #121212; color: white; border-bottom: 1px solid #282828;">
+        <a href="index.php" style="color:white; text-decoration:none; display:flex; align-items:center;">
+             <div style="font-size: 1.5rem; margin-right: 20px; cursor: pointer;">☰</div>
+             <div style="font-weight: bold; font-size: 1.2rem; letter-spacing: 1px;">Music Stream</div>
+        </a>
+    </div>
+    <script>
+        // Only show header if NOT in an iframe (standalone mode)
+        if (window.self === window.top) {
+            document.getElementById('page-header').style.display = 'flex';
+        }
+    </script>
 
-
-    <div id="content-container">
+    <div id="content-container" style="padding-top: 20px;">
         <div class="hero-section" style="padding: 40px 20px; text-align: left; background: none;">
             <h1 class="hero-title" style="font-size: 3rem;">服務條款</h1>
             <p class="hero-subtitle" style="margin: 0; max-width: 100%;">

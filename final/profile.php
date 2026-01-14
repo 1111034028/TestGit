@@ -1,12 +1,12 @@
 <?php
 require_once("inc/auth_guard.php");
-
 require_once("../DB/DB_open.php");
+require_once("../DB/db_helper.php");
 
-$username = $_SESSION["username"];
-$sql = "SELECT * FROM students WHERE username = '$username'";
-$result = mysqli_query($link, $sql);
-$row = mysqli_fetch_assoc($result);
+$username_session = $_SESSION["username"];
+$row = get_user_info($link, $username_session);
+
+if (!$row) die("找不到使用者資料");
 
 // 防止 XSS
 $name = htmlspecialchars($row['name']);
@@ -14,54 +14,11 @@ $address = htmlspecialchars($row['address']);
 $birthday = htmlspecialchars($row['birthday']);
 $password = htmlspecialchars($row['password']);
 $sno = htmlspecialchars($row['sno']);
-?>
-<?php
+
 $page_title = "個人資料 - 音樂串流平台";
+$extra_css = '<link rel="stylesheet" href="css/profile.css">';
 require_once("inc/header.php");
 ?>
-    <link rel="stylesheet" href="css/common.css">
-    <link rel="stylesheet" href="css/music.css">
-    <style>
-        .profile-container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: var(--bg-card);
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; color: var(--text-secondary); }
-        .form-group input { 
-            width: 100%; 
-            padding: 10px; 
-            border-radius: 4px; 
-            border: 1px solid #444; 
-            background: #282828; 
-            color: white; 
-            font-size: 1rem;
-        }
-        .form-group input:focus { outline: none; border-color: var(--accent-color); }
-        .form-group input[readonly] { background: #1a1a1a; color: #777; cursor: not-allowed; }
-        
-        .btn-save {
-            background: var(--accent-color);
-            color: black;
-            border: none;
-            padding: 10px 24px;
-            border-radius: 50px;
-            font-weight: bold;
-            font-size: 1rem;
-            cursor: pointer;
-            width: 100%;
-            transition: transform 0.2s;
-        }
-        .btn-save:hover { transform: scale(1.02); }
-    </style>
-</head>
-<body>
-    <!-- 為 App Shell 移除導覽列 -->
-
     <div id="content-container" style="padding-top: 20px;">
         <h1 style="text-align: center; margin-bottom: 30px;">個人資料設定</h1>
         
@@ -73,12 +30,12 @@ require_once("inc/header.php");
                     <?php 
                         $pic_path = isset($row['picture']) && $row['picture'] ? "img/avatars/" . $row['picture'] : null;
                     ?>
-                    <div id="avatar-preview-container" style="width: 100px; height: 100px; border-radius: 50%; background: #535c68; margin: 0 auto; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
+                    <div id="avatar-preview-container">
                         <?php if ($pic_path && file_exists($pic_path)): ?>
-                            <img src="<?php echo $pic_path; ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                            <img src="<?php echo $pic_path; ?>" alt="Avatar">
                         <?php else: ?>
                             <span style="font-size: 2.5rem; color: white; font-weight: bold;">
-                                <?php echo strtoupper(substr($username, 0, 1)); ?>
+                                <?php echo strtoupper(substr($username_session, 0, 1)); ?>
                             </span>
                         <?php endif; ?>
                     </div>
@@ -93,7 +50,7 @@ require_once("inc/header.php");
                 
                 <div class="form-group">
                     <label>登入帳號</label>
-                    <input type="text" name="username" value="<?php echo $username; ?>" required>
+                    <input type="text" name="username" value="<?php echo htmlspecialchars($username_session); ?>" required>
                 </div>
                 
                 <div class="form-group">
@@ -122,32 +79,10 @@ require_once("inc/header.php");
         </div>
     </div>
     
-    <script>
-        function previewAvatar(input) {
-            if (input.files && input.files[0]) {
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    // 使用 ID 進行穩健選擇
-                    const container = document.getElementById('avatar-preview-container');
-                    
-                    // 檢查內部是否存在 img
-                    let img = container.querySelector('img');
-                    if (!img) {
-                        // 如果顯示初始文字，清除它並加入 img
-                        container.innerHTML = '';
-                        img = document.createElement('img');
-                        img.style.width = '100%';
-                        img.style.height = '100%';
-                        img.style.objectFit = 'cover';
-                        container.appendChild(img);
-                    }
-                    img.src = e.target.result;
-                }
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-    </script>
+    <script src="js/manage_notifications.js"></script>
+    <script src="js/profile.js"></script>
 
+    <?php include "inc/modal.php"; ?>
     <?php include "foot.html"; ?>
 </body>
 </html>

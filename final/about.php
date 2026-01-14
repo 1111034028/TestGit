@@ -3,10 +3,21 @@
 $page_title = "關於我們 - 音樂串流平台";
 require_once("inc/header.php");
 ?>
-<body>
-    <!-- Nav removed -->
+<body style="background-color: #121212; color: white;">
+    <!-- Header with Hamburger and Title (Only show if standalone/top-level) -->
+    <div id="page-header" style="display: none; align-items: center; padding: 15px 25px; background: #121212; color: white; border-bottom: 1px solid #282828;">
+        <a href="index.php" style="color:white; text-decoration:none; display:flex; align-items:center;">
+             <div style="font-size: 1.5rem; margin-right: 20px; cursor: pointer;">☰</div>
+             <div style="font-weight: bold; font-size: 1.2rem; letter-spacing: 1px;">Music Stream</div>
+        </a>
+    </div>
+    <script>
+        if (window.self === window.top) {
+            document.getElementById('page-header').style.display = 'flex';
+        }
+    </script>
 
-    <div id="content-container">
+    <div id="content-container" style="padding-top: 20px;">
         <div class="hero-section">
             <h1 class="hero-title">重新定義你的音樂體驗</h1>
             <p class="hero-subtitle">
@@ -38,6 +49,7 @@ require_once("inc/header.php");
             </div>
         </div>
 
+        <?php if (!isset($_SESSION['login_session']) || $_SESSION['login_session'] !== true): ?>
         <div style="margin-top: 60px; text-align: center; padding: 40px; background: rgba(255,255,255,0.03); border-radius: 20px;">
             <h2 style="font-size: 2rem; margin-bottom: 20px;">加入我們的行列</h2>
             <p style="color: var(--text-secondary); max-width: 600px; margin: 0 auto 30px auto;">
@@ -45,6 +57,7 @@ require_once("inc/header.php");
             </p>
             <a href="register.php" class="btn-primary" style="padding: 15px 40px; font-size: 1.1rem;">立即免費註冊</a>
         </div>
+        <?php endif; ?>
     </div>
 
     <?php include "foot.html"; ?>

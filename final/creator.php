@@ -67,8 +67,8 @@ require_once("inc/header.php");
                         <td><?php echo $row['play_count']; ?></td>
                         <td style="color: var(--text-secondary);"><?php echo $upload_date; ?></td>
                         <td>
-                            <a href="song_edit.php?id=<?php echo $row['id']; ?>" class="btn-secondary" style="font-size: 0.7rem; padding: 4px 10px;">編輯</a>
-                            <a href="song_delete.php?id=<?php echo $row['id']; ?>" class="btn-secondary" style="font-size: 0.7rem; padding: 4px 10px; border-color: #d63031; color: #d63031;" onclick="return confirm('確定要刪除這首歌嗎？此動作無法復原。')">刪除</a>
+                            <a href="song_edit.php?id=<?php echo $row['id']; ?>&from=creator" class="btn-secondary" style="font-size: 0.9rem; padding: 6px 15px;">編輯</a>
+                            <a href="song_delete.php?id=<?php echo $row['id']; ?>" class="btn-secondary" style="font-size: 0.9rem; padding: 6px 15px; border-color: #d63031; color: #d63031;" onclick="confirmLink(event, this.href, '確認刪除', '確定要刪除這首歌嗎？此動作無法復原。', true)">刪除</a>
                         </td>
                     </tr>
                 <?php
@@ -81,10 +81,9 @@ require_once("inc/header.php");
         </table>
     </div>
 
+    <?php include "inc/modal.php"; ?>
     <?php include "foot.html"; ?>
-    <script>
-        // playSong removed - using js/player_bridge.js
-    </script>
+    <script src="js/manage_notifications.js"></script>
 </body>
 </html>
 <?php require_once("../DB/DB_close.php"); ?>

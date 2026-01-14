@@ -43,7 +43,7 @@ function openPlaylistModal(songId) {
     })
     .catch(err => {
       console.error("Failed to load playlists:", err);
-      alert("載入播放清單失敗");
+      showAlert("錯誤", "載入播放清單失敗");
     });
 }
 
@@ -64,7 +64,7 @@ function createPlaylist(songId) {
     const name = nameInput.value.trim();
     
     if (!name) {
-        alert("請輸入清單名稱");
+        showAlert("提示", "請輸入清單名稱");
         return;
     }
     
@@ -84,12 +84,12 @@ function createPlaylist(songId) {
             // Go back to list view which will reload playlists
             openPlaylistModal(songId);
         } else {
-            alert(response.replace('ERROR: ', '') || "建立失敗");
+            showAlert("失敗", response.replace('ERROR: ', '') || "建立失敗");
         }
     })
     .catch(err => {
         console.error("Create playlist error:", err);
-        alert("網路錯誤");
+        showAlert("網路錯誤", "網路連結異常，請重試。");
     });
 }
 
@@ -118,12 +118,12 @@ function toggleSongInPlaylist(songId, playlistId, isInPlaylist) {
         // Handle error messages (remove "ERROR: " prefix if present)
         const msg = response.replace('ERROR: ', '');
         console.error("Server returned error:", response);
-        alert(msg || "操作失敗");
+        showAlert("操作失敗", msg || "操作失敗");
     }
   })
   .catch(err => {
     console.error("Network or Fetch error:", err);
-    alert("網路錯誤或請求被中斷: " + err.message);
+    showAlert("網路錯誤", "網路錯誤或請求被中斷: " + err.message);
   });
 }
 

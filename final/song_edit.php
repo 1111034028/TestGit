@@ -10,6 +10,8 @@ if (!isset($_GET['id'])) {
 }
 
 $song_id = $_GET['id'];
+$from = $_GET['from'] ?? 'creator'; // Default to creator
+$back_url = ($from === 'admin') ? 'admin.php' : 'creator.php';
 $username = $_SESSION["username"];
 
 // 驗證歌曲是否屬於該使用者 或者 使用者是管理員
@@ -47,6 +49,7 @@ require_once("inc/header.php");
         
         <form action="song_edit_act.php" method="post" enctype="multipart/form-data" class="music-form">
             <input type="hidden" name="id" value="<?php echo $song['id']; ?>">
+            <input type="hidden" name="from" value="<?php echo htmlspecialchars($from); ?>">
             
             <div class="form-group">
                 <label>歌名 (Title)</label>
@@ -105,7 +108,7 @@ require_once("inc/header.php");
             </div>
 
             <div style="margin-top: 30px; display: flex; justify-content: flex-end; align-items: center;">
-                <a href="creator.php" style="color: var(--text-secondary); text-decoration: none; margin-right: 20px;">取消</a>
+                <a href="<?php echo $back_url; ?>" style="color: var(--text-secondary); text-decoration: none; margin-right: 20px;">取消</a>
                 <button type="submit" class="btn-primary">儲存更新</button>
             </div>
         </form>

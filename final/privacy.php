@@ -3,10 +3,21 @@
 $page_title = "隱私權政策 - 音樂串流平台";
 require_once("inc/header.php");
 ?>
-<body>
-    <!-- Nav removed -->
+<body style="background-color: #121212; color: white;">
+    <!-- Header with Hamburger and Title (Only show if standalone/top-level) -->
+    <div id="page-header" style="display: none; align-items: center; padding: 15px 25px; background: #121212; color: white; border-bottom: 1px solid #282828;">
+        <a href="index.php" style="color:white; text-decoration:none; display:flex; align-items:center;">
+             <div style="font-size: 1.5rem; margin-right: 20px; cursor: pointer;">☰</div>
+             <div style="font-weight: bold; font-size: 1.2rem; letter-spacing: 1px;">Music Stream</div>
+        </a>
+    </div>
+    <script>
+        if (window.self === window.top) {
+            document.getElementById('page-header').style.display = 'flex';
+        }
+    </script>
 
-    <div id="content-container">
+    <div id="content-container" style="padding-top: 20px;">
         <div style="margin-bottom: 40px;">
             <h1 style="font-size: 2.5rem; margin-bottom: 10px;">隱私權政策</h1>
             <p style="color: var(--text-secondary);">我們重視您的隱私，並致力於透明化資料處理方式。</p>
