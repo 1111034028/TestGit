@@ -1,0 +1,51 @@
+
+# 音跡留言 (Mood Message Stamp) 功能實作計畫
+
+## 1. 功能核心描述 (Core Description)
+「音跡留言」是一項結合物理位置與數位音樂的感測器驅動社群功能。透過使用者的地理座標，將「當下的心情」與「推薦的音樂」錨定在特定的現實地點。
+
+這些留言將成為該地點專屬的「數位留言牆」，其他使用者路過時可讀取這些心情並聆聽相關音樂，實現虛實整合的社交體驗。
+
+## 2. 行動技術關連性 (Mobile Tech relevance)
+*   **即時定位與描述 (Geo-Description)**：利用 HTML5 Geolocation API 獲取高精度的經緯度，將抽象的情緒轉化為帶有地理資訊的元數據 (Metadata)。
+*   **心情標註架構 (Mood-based Annotation)**：基於地點的媒體標註技術，將「地點 + 時間 + 音樂 + 心理狀態」整合。
+*   **API 資料同步**：前端將「座標 + 歌曲 ID + 心情留言」封裝為 JSON，透過 RESTful API (`api_save_stamp.php`) 與後端 `music_marks` 資料庫進行即時同步。
+
+## 3. 功能運作流程 (Operational Workflow)
+
+### 3.1 留言建立 (Creation)
+1.  **一鍵獲取**：使用者在介面上點擊「在此留言 (Drop a Music Stamp)」。系統請求 GPS 權限並獲取 `latitude`, `longitude`。
+2.  **心情編輯**：
+    *   **選擇音樂**：從系統音樂庫選擇一首符合當下情境的歌曲（預設當前播放）。
+    *   **撰寫心情**：輸入文字（例：「午後的陽光配上這首 Jazz 剛剛好。」）。
+3.  **雲端封存**：前端發送請求，後端寫入 `music_marks` 資料表。
+
+### 3.2 留言發現 (Discovery)
+1.  **區域觸發 (Geofencing / Proximity Detection)**：
+    *   系統獲取使用者當前座標。
+    *   後端計算半徑 50 公尺內的所有 Music Stamps。
+2.  **互動通知**：
+    *   介面顯示「附近有音跡留言」。
+    *   使用者點擊後，展開閱讀留言並可直接播放該推薦歌曲。
+
+## 4. 資料庫架構規劃 (Database Schema)
+
+新增資料表 `music_marks`：
+
+```sql
+CREATE TABLE `music_marks` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` varchar(20) NOT NULL COMMENT '對應 students 表的 sno',
+  `song_id` int(11) NOT NULL COMMENT '對應 songs 表的 id',
+  `latitude` decimal(10, 8) NOT NULL COMMENT '緯度',
+  `longitude` decimal(11, 8) NOT NULL COMMENT '經度',
+  `message` text COLLATE utf8mb4_unicode_ci COMMENT '心情留言',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`song_id`) REFERENCES `songs` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+## 5. 方案價值 (Value Proposition)
+*   **虛實整合的留言牆**：無需實體塗鴉或紙張，讓城市的每個角落都充滿看不見的故事與旋律。
+*   **低干擾社交**：打破時間限制，創造「與陌生人在相同地點、不同時間」的獨特情感連結（Asynchronous Location-based Social Interaction）。
