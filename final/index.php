@@ -97,11 +97,6 @@ if (isset($_GET['inner'])) {
         <?php endif; ?>
     </div>
     
-    <div id="playlist-modal">
-        <div class="modal-content">
-            <form><!-- Dynamic --></form>
-        </div>
-    </div>
 
     <script src="js/player_bridge.js?v=5"></script>
     <script src="js/index_content.js?v=5"></script>
@@ -143,6 +138,31 @@ if (isset($_GET['inner'])) {
             <a href="my_playlists.php" target="content-frame" onclick="highlightNav('nav-library')" class="nav-item" id="nav-library" title="播放清單">
                 <span class="nav-icon">❏</span> <span class="nav-text">播放清單</span>
             </a>
+            <a href="anime_map.php" target="content-frame" onclick="highlightNav('nav-map')" class="nav-item" id="nav-map" title="音域地圖">
+                <img src="img/map.jpg" class="nav-icon" style="border-radius: 4px; object-fit: cover;"> <span class="nav-text">音域地圖</span>
+            </a>
+            <div onclick="initRemoteControl(); highlightNav('nav-remote')" class="nav-item" id="nav-remote" title="手機互動">
+                <img src="img/phone.jpg" class="nav-icon" style="border-radius: 4px; object-fit: cover;"> <span class="nav-text">手機互動</span>
+            </div>
+            
+            <?php
+            if (isset($_SESSION['username'])) {
+                $check_u = $_SESSION['username'];
+                $chk_sql = "SELECT role FROM students WHERE username = '$check_u'";
+                $chk_res = mysqli_query($link, $chk_sql);
+                if ($chk_res && mysqli_num_rows($chk_res) > 0) {
+                    $chk_row = mysqli_fetch_assoc($chk_res);
+                    if ($chk_row['role'] === 'admin') {
+            ?>
+            <hr style="border: 0; border-top: 1px solid #444; margin: 10px 20px;">
+            <a href="admin.php" target="content-frame" onclick="highlightNav('nav-admin')" class="nav-item" id="nav-admin" title="後台管理">
+                <img src="img/8abbdb093fee4da88e0983a89d8498c2.png" class="nav-icon" style="border-radius: 4px; object-fit: cover; background: #fff; padding: 2px;"> <span class="nav-text">後台管理</span>
+            </a>
+            <?php
+                    }
+                }
+            }
+            ?>
             
             <hr style="border: 0; border-top: 1px solid #282828; margin: 10px 20px;">
             
@@ -230,6 +250,7 @@ if (isset($_GET['inner'])) {
                 <div id="player-artist"></div>
             </div>
             <button class="control-btn" id="like-btn" onclick="toggleLike()" title="加入最愛">♡</button>
+            <button class="control-btn" id="add-playlist-btn" onclick="openCurrentPlaylistModal()" title="加入播放清單" style="font-size: 1.4rem; font-weight: bold;">+</button>
         </div>
         <div class="player-right">
             <div class="volume-container">
@@ -239,7 +260,6 @@ if (isset($_GET['inner'])) {
             </div>
             <button class="control-btn" id="shuffle-btn" onclick="toggleShuffle()" title="隨機播放" style="opacity: 0.5;">🔀</button>
             <button class="control-btn" id="loop-btn" onclick="toggleLoop()" title="循環播放">🔁</button>
-            <button class="control-btn" id="remote-btn" onclick="initRemoteControl()" title="手機遙控" style="margin-left: 5px;">📱</button>
            <div id="queue-info" style="font-size: 0.7rem; color: #777; border: 1px solid #333; padding: 2px 6px; border-radius: 4px;">Q: 0</div>
         </div>
         <audio id="audio-player"></audio>
@@ -259,17 +279,32 @@ if (isset($_GET['inner'])) {
         </div>
     </div>
 
-    <div id="remote-modal" class="modal-overlay">
-        <div class="modal-box" style="background: white; color: black; max-width: 320px; display: block; transform: none; position: relative;">
-            <button onclick="document.getElementById('remote-modal').style.display='none'" style="position: absolute; right: 10px; top: 10px; border: none; background: none; font-size: 1.5rem; cursor: pointer; color: #333;">&times;</button>
-            <h3 style="margin-top: 10px; color: #333;">掃描 QR Code</h3>
-            <div id="qr-code-container" style="margin: 20px auto; background: white; padding: 10px; display: inline-block;"></div>
-            <p id="mobile-url-hint" style="color: #555; font-size: 0.9rem; margin-bottom: 5px;">正在載入...</p>
+    <div id="playlist-modal">
+        <div class="modal-content">
+            <form><!-- Dynamic --></form>
         </div>
     </div>
 
-    <script src="js/remote_client.js?v=2"></script>
-    <script src="js/index_shell.js?v=8"></script>
+    <div id="remote-modal" class="modal-overlay" onclick="if(event.target === this) this.style.display='none'">
+        <div class="modal-box" style="background: white; color: black; max-width: 320px; display: block; transform: none; position: relative;">
+            <button onclick="document.getElementById('remote-modal').style.display='none'" style="position: absolute; right: 10px; top: 10px; border: none; background: none; font-size: 1.5rem; cursor: pointer; color: #333;">&times;</button>
+            <h3 style="margin-top: 10px; color: #333;">手機互動配對</h3>
+            <div id="qr-code-container" style="margin: 20px auto; background: white; padding: 10px; display: inline-block; border: 1px solid #eee; border-radius: 10px;"></div>
+            <p id="mobile-url-hint" style="color: #555; font-size: 0.9rem; margin-bottom: 15px;">掃描上方 QR Code 開始互動</p>
+            <button onclick="refreshRemoteToken()" style="width: 100%; padding: 10px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; color: #555; font-size: 0.85rem; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                <span>↻</span> 刷新連線碼
+            </button>
+        </div>
+    </div>
+
+    <?php include "inc/modal.php"; ?>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="js/components.js?v=2"></script>
+    <script src="js/remote_client.js?v=3"></script>
+    <script src="js/shell_ui.js?v=1"></script>
+    <script src="js/player_core.js?v=1"></script>
+    <script src="js/player_view.js?v=1"></script>
+    <script src="js/playlist_manager.js?v=1"></script>
     <?php if (isset($_SESSION['first_login']) && $_SESSION['first_login'] === true): 
         $w_user = $_SESSION['username']; 
         unset($_SESSION['first_login']); 

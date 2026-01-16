@@ -3,7 +3,7 @@ session_start(); // 啟用交談期
 
 // 新增：若已登入則直接跳轉至首頁，不顯示登入頁面
 if (isset($_SESSION["login_session"]) && $_SESSION["login_session"] === true) {
-    header("Location: index.php");
+    echo "<script>window.top.location.href='index.php';</script>";
     exit;
 }
 
@@ -41,7 +41,7 @@ if ($username != "" && $password != "") {
             $_SESSION["sno"] = $row['sno']; 
             $_SESSION["picture"] = $row['picture']; 
             $_SESSION["first_login"] = true; 
-            header("Location: index.php"); 
+            echo "<script>window.top.location.href='index.php';</script>";
             exit;
         }
     }

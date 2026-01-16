@@ -1,5 +1,5 @@
 <?php
-    require_once('../final/auth_check.php');
+    require_once('../final/inc/auth_guard.php');
     
     // Handle File Upload and Logic
     if(isset($_FILES["photo"]) && $_FILES["photo"]["error"] == 0){

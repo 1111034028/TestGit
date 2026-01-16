@@ -118,7 +118,7 @@ require_once("inc/modal.php");
     </div>
 
     <script src="js/player_bridge.js?v=5"></script>
-    <script src="js/playlist_manager.js"></script>
+    <script src="js/playlist_manager.js?v=<?php echo time(); ?>"></script>
     <?php include "foot.html"; ?>
 </body>
 </html>

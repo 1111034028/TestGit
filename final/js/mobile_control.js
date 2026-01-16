@@ -1,132 +1,106 @@
-class MobileController {
-    constructor(token) {
-        this.token = token;
-        this.currentState = { isPlaying: false, title: '', artist: '', cover: '' };
-        this.playBtn = document.getElementById('play-btn');
-        this.silentAudio = document.getElementById('silent-audio');
-        this.volTimeout = null;
+// State Syncing
+let currentToken = '';
+let syncInterval = null;
 
-        this.init();
-    }
-
-    init() {
-        // Unlock audio context on ANY interaction (iOS Requirement)
-        document.body.addEventListener('click', () => {
-            if (this.silentAudio.paused) {
-                this.silentAudio.play().then(() => {
-                    console.log("Audio Context Unlocked");
-                }).catch(e => console.log("Audio unlock failed (yet):", e));
-            }
-        }, { once: true });
-
-        // Volume Slider listener
-        document.getElementById('vol-slider').addEventListener('input', (e) => {
-            clearTimeout(this.volTimeout);
-            this.volTimeout = setTimeout(() => {
-                this.sendCommand('volume', e.target.value);
-            }, 100);
-        });
-
-        // Initial connection
-        this.sendCommand('connect');
-
-        // Start polling
-        setInterval(() => this.pollState(), 1000);
-    }
-
-    sendCommand(cmd, payload = '') {
-        fetch('api_remote_send.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: `token=${this.token}&command=${cmd}&payload=${payload}`
-        }).catch(console.error);
-    }
-
-    togglePlay() {
-        // Force play silent audio to keep session active
-        this.silentAudio.play().catch(e => console.log("Silent audio blocked:", e));
-        this.sendCommand('toggle_play');
-    }
-
-    pollState() {
-        fetch(`api_remote_sync.php?action=pull&token=${this.token}`)
-            .then(res => res.json())
-            .then(data => {
-                this.updateUI(data);
-            })
-            .catch(console.error);
-    }
-
-    updateUI(data) {
-        // Update Text
-        if (data.title && data.title !== this.currentState.title) {
-            document.getElementById('track-title').innerText = data.title;
-            this.currentState.title = data.title;
-        }
-        if (data.artist && data.artist !== this.currentState.artist) {
-            document.getElementById('track-artist').innerText = data.artist;
-            this.currentState.artist = data.artist;
-        }
-        
-        // Update Cover
-        if (data.cover && data.cover !== this.currentState.cover) {
-            document.getElementById('album-art').src = data.cover;
-            document.getElementById('bg-art').style.backgroundImage = `url('${data.cover}')`;
-            this.currentState.cover = data.cover;
-        }
-        
-        // Always try to update Media Session Metadata (to ensure it sticks)
-        if (data.title) this.updateMediaSession(data);
-
-        // Update Play Button
-        const isPlaying = data.isPlaying;
-        if (isPlaying !== this.currentState.isPlaying) {
-            this.playBtn.innerText = isPlaying ? '❚❚' : '▶';
-            this.currentState.isPlaying = isPlaying;
-            
-            // Sync system audio state
-            if (isPlaying) {
-                this.silentAudio.play().catch(()=>{});
-                if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
-            } else {
-                this.silentAudio.pause();
-                if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
-            }
-        }
-        
-        // Update Progress Bar
-        if (data.duration > 0) {
-            const pct = (data.currentTime / data.duration) * 100;
-            document.getElementById('progress-bar-fill').style.width = pct + '%';
-        }
-    }
-
-    updateMediaSession(data) {
-        if ('mediaSession' in navigator) {
-            navigator.mediaSession.metadata = new MediaMetadata({
-                title: data.title,
-                artist: data.artist,
-                artwork: [
-                    { src: data.cover, sizes: '512x512', type: 'image/jpeg' }
-                ]
-            });
-
-            navigator.mediaSession.setActionHandler('play', () => { this.togglePlay(); });
-            navigator.mediaSession.setActionHandler('pause', () => { this.togglePlay(); });
-            navigator.mediaSession.setActionHandler('previoustrack', () => { this.sendCommand('prev'); });
-            navigator.mediaSession.setActionHandler('nexttrack', () => { this.sendCommand('next'); });
-        }
-    }
-}
-
-// Helper global functions for inline onclick in HTML
-window.mobileController = null;
 function initMobileControl(token) {
-    window.mobileController = new MobileController(token);
+    currentToken = token;
+    console.log("Mobile control initialized with token:", token);
+    
+    // Bind volume slider
+    const volSlider = document.getElementById('vol-slider');
+    if(volSlider) {
+        volSlider.addEventListener('input', function() {
+            sendCommand('set_volume', this.value);
+        });
+    }
+
+    // Start State Polling
+    startSyncing();
 }
-function sendCommand(cmd, payload) {
-    if (window.mobileController) window.mobileController.sendCommand(cmd, payload);
+
+function startSyncing() {
+    if (syncInterval) clearInterval(syncInterval);
+    
+    // 1. Sync Player State (1s is enough for UI)
+    syncInterval = setInterval(() => {
+        syncPlayerState();
+    }, 1000);
+
+    // 2. Check for token updates (Low priority, 5s is fine)
+    setInterval(() => {
+        checkTokenHealth();
+    }, 5000);
 }
+
+function syncPlayerState() {
+    fetch(`api_get_state.php?token=${currentToken}`)
+        .then(res => res.json())
+        .then(state => {
+            if (state && state.title) {
+                document.getElementById('track-title').innerText = state.title;
+                document.getElementById('track-artist').innerText = state.artist;
+                document.getElementById('album-art').src = state.cover;
+                document.getElementById('bg-art').style.backgroundImage = `url('${state.cover}')`;
+                
+                const btn = document.getElementById('play-btn');
+                btn.innerText = state.isPlaying ? '❚❚' : '▶';
+                
+                if (state.duration > 0) {
+                    const fill = document.getElementById('progress-bar-fill');
+                    const percent = (state.currentTime / state.duration) * 100;
+                    fill.style.width = percent + '%';
+                }
+            }
+        })
+        .catch(err => console.warn("Player state sync error"));
+}
+
+function checkTokenHealth() {
+    fetch(`api_sync_mobile_token.php?token=${currentToken}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'new_token') {
+                console.log("Detected new token on computer, refreshing...");
+                window.location.href = `mobile_control.php?token=${data.token}`;
+            }
+        })
+        .catch(err => {});
+}
+
+function sendCommand(cmd, payload = '') {
+    const formData = new FormData();
+    formData.append('token', currentToken);
+    formData.append('command', cmd);
+    formData.append('payload', payload);
+
+    fetch('api_send_command.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.status !== 'success') {
+            console.error("Command failed", data);
+            showToast("與電腦連結已中斷");
+        }
+    })
+    .catch(err => {
+        console.error("Network error", err);
+    });
+}
+
 function togglePlay() {
-    if (window.mobileController) window.mobileController.togglePlay();
+    sendCommand('toggle_play');
+    const btn = document.getElementById('play-btn');
+    if(btn.innerText === '▶') btn.innerText = '❚❚';
+    else btn.innerText = '▶';
+}
+
+function showToast(msg) {
+    const toast = document.getElementById('status-toast');
+    if(toast) {
+        toast.innerText = msg;
+        toast.style.display = 'block';
+        setTimeout(() => toast.style.display = 'none', 2000);
+    }
 }

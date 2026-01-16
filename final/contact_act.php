@@ -9,7 +9,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         'name' => $_POST['name'],
         'email' => $_POST['email'],
         'category' => $_POST['category'],
-        'subject' => mb_substr($_POST['message'], 0, 30) . '...',
         'message' => $_POST['message']
     ];
 

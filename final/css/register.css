@@ -1,0 +1,8 @@
+/* 註冊頁面調整 */
+.login-card {
+    max-width: 400px; /* 稍微加寬 */
+}
+.login-container { /* 修改自 #content-container */
+    max-width: 600px;
+    margin: 50px auto; /* 置中對齊 */
+}

@@ -1,0 +1,11 @@
+.msg-list { max-width: 800px; margin: 0 auto; }
+.msg-card {
+    background: #282828; padding: 20px; border-radius: 10px; margin-bottom: 20px;
+    transition: transform 0.2s; cursor: pointer; border: 1px solid #333;
+}
+.msg-card:hover { transform: translateY(-3px); border-color: var(--accent-color); }
+.msg-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9rem; color: #aaa; }
+.msg-status { padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; }
+.status-new { background: #ff7675; color: white; }
+.status-read { background: #74b9ff; color: black; }
+.status-closed { background: #b2bec3; color: black; }

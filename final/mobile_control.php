@@ -1,8 +1,67 @@
 <?php
+session_start();
+require_once("../DB/DB_open.php");
+
 $token = $_GET['token'] ?? '';
+
 if (empty($token)) {
-    die("Invalid Session Token.");
+    // Auto-discovery logic
+    if (!isset($_SESSION['login_session']) || $_SESSION['login_session'] !== true) {
+        header("Location: mobile_login.php");
+        exit;
+    }
+
+    $uid = intval($_SESSION['sno']);
+    // Find the most recent token for this user
+    $sql_find = "SELECT token FROM mobile_tokens WHERE user_id = $uid ORDER BY last_active DESC LIMIT 1";
+    $res_find = mysqli_query($link, $sql_find);
+    
+    if ($res_find && mysqli_num_rows($res_find) > 0) {
+        $row_find = mysqli_fetch_assoc($res_find);
+        header("Location: mobile_control.php?token=" . $row_find['token']);
+        exit;
+    } else {
+        // Logged in but no desktop session found
+        ?>
+        <!DOCTYPE html>
+        <html lang="zh-TW">
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>尚未連線</title>
+            <style>
+                body { background: #121212; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
+                .btn { display: inline-block; padding: 12px 24px; border-radius: 50px; text-decoration: none; font-weight: bold; margin-top: 20px; transition: all 0.2s; }
+                .btn-primary { background: #1DB954; color: black; }
+                .btn-secondary { background: transparent; border: 1px solid #555; color: #ccc; font-size: 0.9rem; }
+            </style>
+        </head>
+        <body>
+            <h2 style="margin-bottom: 10px;">找不到電腦端</h2>
+            <p style="color: #aaa; margin-bottom: 30px;">請在電腦上開啟 Music Stream<br>並登入相同的帳號。</p>
+            <a href="mobile_control.php" class="btn btn-primary">重新偵測</a>
+            <br>
+            <a href="mobile_login.php" class="btn btn-secondary">切換帳號</a>
+        </body>
+        </html>
+        <?php
+        exit;
+    }
 }
+
+// Security: Check token existence
+$clean_token = mysqli_real_escape_string($link, $token);
+$check = mysqli_query($link, "SELECT * FROM mobile_tokens WHERE token = '$clean_token'");
+
+if (mysqli_num_rows($check) == 0) {
+    die('<div style="color:white;text-align:center;margin-top:50px;">連線已逾時或無效，請重新掃描</div>');
+}
+
+// Update status to connected
+mysqli_query($link, "UPDATE mobile_tokens SET status = 'connected', last_active = NOW() WHERE token = '$clean_token'");
+
+// Determine user login status if available
+$is_logged_in = isset($_SESSION['user_id']); 
 ?>
 <!DOCTYPE html>
 <html lang="zh-TW">

@@ -1,119 +1,170 @@
 // Remote Control Client Logic (Desktop)
 
-let remoteSessionToken = null;
 let pollInterval = null;
-const POLL_RATE = 1500; // 1.5s (adjust based on server load capacity)
+const POLL_RATE = 1500; // 1.5s
+let syncInterval = null;
+
+window.currentRemoteToken = null;
 
 function initRemoteControl() {
-  const modal = document.getElementById('remote-modal');
-  if (modal) modal.style.display = 'flex';
-
-  console.log("Initializing Remote Control...");
-
-  // Check if QRCode library is loaded
-  if (typeof QRCode === "undefined") {
-    const script = document.createElement("script");
-    script.src =
-      "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
-    script.onload = () => {
-      console.log("QRCode Lib Loaded");
-      requestRemoteSession();
-    };
-    script.onerror = () => {
-      document.getElementById("qr-stage").innerHTML =
-        '<p style="color:red">Failed to load QR library</p>';
-    };
-    document.head.appendChild(script);
-  } else {
-    requestRemoteSession();
-  }
+    const modal = document.getElementById('remote-modal');
+    if (!modal) return;
+    
+    modal.style.display = 'flex';
+    
+    // Only generate QR if container is empty (first time or after refresh)
+    const qrContainer = document.getElementById('qr-code-container');
+    if (qrContainer && qrContainer.innerHTML === '') {
+        loadRemoteToken(false);
+    }
 }
 
-function requestRemoteSession() {
-  fetch("api_remote_create.php")
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.status === "success") {
-        remoteSessionToken = data.token;
-        renderQR(remoteSessionToken);
-        startPolling(remoteSessionToken);
-        setupSync(remoteSessionToken); // Init Sync
-      } else {
-        console.error("Failed to create session:", data.message);
-      }
-    })
-    .catch((err) => console.error("API Error:", err));
+function refreshRemoteToken() {
+    loadRemoteToken(true);
 }
 
-function renderQR(token) {
-  const container = document.getElementById("qr-code-container");
-  if (!container) return;
+function loadRemoteToken(forceNew = false) {
+    const qrContainer = document.getElementById('qr-code-container');
+    const hint = document.getElementById('mobile-url-hint');
+    if (!qrContainer || !hint) return;
+    
+    qrContainer.innerHTML = '';
+    hint.innerText = forceNew ? "正在重新產生連線碼..." : "正在取得連線碼...";
+    
+    const url = forceNew ? 'api_get_mobile_token.php?refresh=1' : 'api_get_mobile_token.php';
+    
+    fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                window.currentRemoteToken = data.token;
+                
+                const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+                const mobileUrl = baseUrl + "mobile_control.php?token=" + data.token;
+                
+                new QRCode(qrContainer, {
+                    text: mobileUrl,
+                    width: 200,
+                    height: 200
+                });
+                
+                let hintMsg = "";
+                if (baseUrl.includes('localhost')) {
+                    hintMsg = `<span style="color: #ff4757; font-weight: bold;">注意：檢測到 localhost</span><br><small style="color: #888;">手機無法直接連線至 localhost，請改用您的區網 IP 或 ngrok 網址開啟電腦版。</small>`;
+                } else {
+                    hintMsg = forceNew ? "已更新連線碼！" : "掃描上方 QR Code 開始互動";
+                }
 
-  container.innerHTML = ""; // Clear previous
-
-  // Construct Mobile URL
-  // Assumption: mobile_control.php is in the same directory
-  let protocol = window.location.protocol;
-  let host = window.location.host;
-  
-  // Force specific IP for mobile connection if on localhost
-  if (host.includes('localhost') || host.includes('127.0.0.1')) {
-      host = '192.168.28.12';
-  }
-  
-  const path = window.location.pathname.substring(
-    0,
-    window.location.pathname.lastIndexOf("/")
-  );
-  const mobileUrl = `${protocol}//${host}${path}/mobile_control.php?token=${token}`;
-
-  console.log("Mobile Control URL:", mobileUrl);
-
-  new QRCode(container, {
-    text: mobileUrl,
-    width: 180,
-    height: 180,
-    colorDark: "#000000",
-    colorLight: "#ffffff",
-  });
-
-  document.getElementById("mobile-url-hint").innerHTML =
-    `請掃描 QR Code<br><span style="font-size:0.8em; color:#888; word-break:break-all;">${mobileUrl}</span>`;
-}
-
-function startPolling(token) {
-  // Stop existing poll if any
-  if (pollInterval) clearInterval(pollInterval);
-
-  pollInterval = setInterval(() => {
-    pollCommands(token);
-  }, POLL_RATE);
-}
-
-function pollCommands(token) {
-  fetch(`api_remote_check.php?token=${token}`)
-    .then((res) => res.json())
-    .then((commands) => {
-      if (commands && commands.length > 0) {
-        commands.forEach((cmd) => {
-          executeCommand(cmd);
+                hintMsg += `<div style="margin-top: 10px; font-size: 0.8rem; word-break: break-all; background: #eee; padding: 5px; user-select: text;">
+                    <a href="${mobileUrl}" target="_blank" style="color:#0984e3; text-decoration: underline;">${mobileUrl}</a>
+                </div>`;
+                
+                hint.innerHTML = hintMsg;
+                
+                if (window.showToast && forceNew) window.showToast("連線碼已刷新", "info");
+                
+                startWaitingForConnection();
+            } else {
+                hint.innerText = "連線碼取得失敗";
+            }
+        })
+        .catch(err => {
+            console.error("Token Load Error:", err);
+            hint.innerText = "系統錯誤";
         });
-      }
-    })
-    .catch((err) => console.error("Poll Error:", err));
 }
+
+let statusInterval = null;
+
+// Flag to prevent double starting
+let isSyncing = false;
+
+function startWaitingForConnection() {
+    if (statusInterval) clearInterval(statusInterval);
+    
+    console.log("Waiting for mobile connection...");
+    // Only check connection status initially (Lightweight)
+    statusInterval = setInterval(checkConnectStatus, 2000);
+}
+
+function startFullSync() {
+    if (isSyncing) return;
+    isSyncing = true;
+    
+    console.log("Mobile connected! Starting full sync...");
+    
+    // 1. Start Command Polling
+    if (pollInterval) clearInterval(pollInterval);
+    pollInterval = setInterval(() => {
+        fetch('api_get_commands.php')
+            .then(res => res.json())
+            .then(commands => {
+                if (Array.isArray(commands) && commands.length > 0) {
+                    commands.forEach(cmd => executeCommand(cmd));
+                }
+            })
+            .catch(() => {});
+    }, POLL_RATE);
+
+    // 2. Start State Pushing
+    if (syncInterval) clearInterval(syncInterval);
+    syncInterval = setInterval(pushState, 2000);
+    
+    // Add Event Listeners for instant updates (only once)
+    const audio = document.getElementById('audio-player');
+    if(audio && !audio.hasAttribute('data-sync-attached')) {
+        audio.addEventListener('play', pushState);
+        audio.addEventListener('pause', pushState);
+        audio.setAttribute('data-sync-attached', 'true');
+    }
+}
+
+function checkConnectStatus() {
+    if (!window.currentRemoteToken) return;
+    
+    fetch('api_check_mobile_status.php?token=' + window.currentRemoteToken)
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'connected') {
+                // Mobile is connected
+                const modal = document.getElementById('remote-modal');
+                if (modal && modal.style.display !== 'none') {
+                    modal.style.display = 'none';
+                }
+                
+                // Show toast regardless of modal state to inform user
+                if (window.showToast) window.showToast("手機已成功連線！", "success");
+                
+                // Stop checking status, start syncing data
+                clearInterval(statusInterval);
+                statusInterval = null;
+                startFullSync();
+            }
+        })
+        .catch(err => console.error("Status Check Error:", err));
+}
+
+
 
 function executeCommand(cmdObj) {
   const { command, payload } = cmdObj;
-  console.log("Remote Command Received:", command, payload);
+  console.log("Remote Command:", command, payload);
+
+  const audio = document.getElementById('audio-player');
+  const mainPlayBtn = document.getElementById('main-play-btn');
 
   switch (command) {
-    case "play":
-    case "pause":
     case "toggle_play":
-      // Call index_shell.js function
       if (typeof togglePlay === "function") togglePlay();
       break;
+
+    case "play":
+       if (audio) audio.play();
+       break;
+       
+    case "pause":
+       if (audio) audio.pause();
+       break;
 
     case "next":
       if (typeof nextSong === "function") nextSong();
@@ -123,87 +174,64 @@ function executeCommand(cmdObj) {
       if (typeof prevSong === "function") prevSong();
       break;
 
-    case "volume":
+    case "set_volume": // Mobile slider 0-1
       const vol = parseFloat(payload);
-      if (!isNaN(vol) && typeof audio !== "undefined") {
+      if (!isNaN(vol) && audio) {
         audio.volume = vol;
-        if (typeof updateVolumeIcon === "function") updateVolumeIcon(vol);
-        const slider = document.getElementById("volume-slider");
-        if (slider) slider.value = vol;
+        const volSlider = document.getElementById("volume-slider");
+        if(volSlider) volSlider.value = vol;
+        const volVal = document.getElementById("volume-value");
+        if(volVal) volVal.innerText = Math.round(vol * 100) + "%";
+      }
+      break;
+      
+    case "seek": // 0-100 percentage
+      const percent = parseFloat(payload);
+      if(!isNaN(percent) && audio && audio.duration) {
+          audio.currentTime = (percent / 100) * audio.duration;
       }
       break;
 
-    case "mute":
-      if (typeof toggleMute === "function") toggleMute();
+    case "toggle_loop":
+      if (typeof toggleLoop === "function") toggleLoop();
+      break;
+      
+    case "toggle_shuffle":
+      if (typeof toggleShuffle === "function") toggleShuffle();
       break;
 
     default:
       console.warn("Unknown command:", command);
   }
+  
+  // Force a state push immediately after command
+  setTimeout(pushState, 200);
 }
 
-// Cleanup on unload
-window.addEventListener("beforeunload", () => {
-  if (pollInterval) clearInterval(pollInterval);
-});
-
-// --- V2: State Synchronization (Desktop -> Mobile) ---
-
-function setupSync(token) {
-    const audioEl = document.getElementById('audio-player') || window.audio;
-    if (!audioEl) {
-        console.warn("Audio element not found, cannot sync state.");
-        return;
-    }
-
-    // 1. Listen to Audio Events
-    audioEl.addEventListener('play', () => pushStateToRemote(token));
-    audioEl.addEventListener('pause', () => pushStateToRemote(token));
-    audioEl.addEventListener('timeupdate', () => {
-        // Throttle timeupdate to avoid flooding (e.g. every 2 seconds or just relied on poll?)
-        // Actually, for remote control, precise time isn't critical but periodic updates help.
-        // Let's NOT push on every timeupdate to save bandwidth, unless we want live-ish progress.
-        // For now, let's just rely on play/pause and metadata changes, plus maybe a slow interval.
-    });
+function pushState() {
+    const audio = document.getElementById('audio-player');
+    const title = document.getElementById('player-title')?.innerText || '';
+    const artist = document.getElementById('player-artist')?.innerText || '';
+    const cover = document.getElementById('player-cover')?.src || '';
     
-    // 2. Listen to Song Info Changes (using Name Mutation)
-    const titleElem = document.getElementById('player-title');
-    if (titleElem) {
-        const observer = new MutationObserver(() => {
-            setTimeout(() => pushStateToRemote(token), 300); 
-        });
-        observer.observe(titleElem, { childList: true, subtree: true, characterData: true });
-    }
-
-    // Initial Push
-    setTimeout(() => pushStateToRemote(token), 1000);
-}
-
-function pushStateToRemote(token) {
-    const audioEl = document.getElementById('audio-player') || window.audio;
-    if (!audioEl) return;
-
-    // Gather State
-    const titleVal = document.getElementById('player-title')?.innerText || 'Unknown Title';
-    const artistVal = document.getElementById('player-artist')?.innerText || 'Unknown Artist';
-    const coverVal = document.getElementById('player-cover')?.src || ''; 
-    const isPlaying = !audioEl.paused;
+    if (!audio) return;
     
-    // DEBUG LOG
-    console.log("Pushing State:", titleVal, isPlaying, audioEl.currentTime);
-
-    const statePayload = {
-        title: titleVal,
-        artist: artistVal,
-        cover: coverVal,
-        isPlaying: isPlaying,
-        currentTime: audioEl.currentTime,
-        duration: audioEl.duration
+    const payload = {
+        title: title,
+        artist: artist,
+        cover: cover,
+        isPlaying: !audio.paused,
+        currentTime: audio.currentTime,
+        duration: audio.duration || 0
     };
-
-    fetch(`api_remote_sync.php?action=push&token=${token}`, {
+    
+    fetch('api_push_state.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(statePayload)
-    }).catch(err => console.error("Sync Error:", err));
+        body: JSON.stringify(payload)
+    }).catch(()=>{}); // Ignore errors
 }
+
+// Auto initialized on load to register session for auto-discovery
+loadRemoteToken(false);
+startWaitingForConnection();

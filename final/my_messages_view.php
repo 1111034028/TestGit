@@ -84,7 +84,7 @@ require_once("inc/header.php");
             <div style="display: flex; align-items: center; gap: 15px;">
                 <a href="my_messages.php" class="btn-secondary" style="padding: 5px 15px;">< 返回</a>
                 <div>
-                    <h3 style="margin:0; font-size: 1.1rem;"><?php echo htmlspecialchars($msg['subject']); ?></h3>
+                    <h3 style="margin:0; font-size: 1.1rem;">客服對話</h3>
                     <div style="font-size: 0.85rem; color: #aaa;"><?php echo htmlspecialchars($msg['category']); ?></div>
                 </div>
             </div>

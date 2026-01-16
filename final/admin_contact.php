@@ -7,6 +7,29 @@ if (!is_admin($link, $_SESSION["username"])) {
     die("Unauthorized access.");
 }
 
+// 處理操作 (結單 / 刪除)
+if (isset($_GET['action']) && isset($_GET['id'])) {
+    $id = (int)$_GET['id'];
+    $action = $_GET['action'];
+    $page = $_GET['page'] ?? 1;
+
+    if ($action === 'close') {
+        db_update($link, 'contact_messages', ['status' => 'closed'], "id = $id");
+    } elseif ($action === 'delete') {
+        mysqli_query($link, "DELETE FROM contact_replies WHERE message_id = $id");
+        mysqli_query($link, "DELETE FROM contact_messages WHERE id = $id");
+        
+        // 若清空則重置 ID
+        $cnt = mysqli_fetch_assoc(mysqli_query($link, "SELECT COUNT(*) as c FROM contact_messages"))['c'];
+        if ($cnt == 0) {
+            mysqli_query($link, "ALTER TABLE contact_messages AUTO_INCREMENT = 1");
+            mysqli_query($link, "ALTER TABLE contact_replies AUTO_INCREMENT = 1");
+        }
+    }
+    header("Location: admin_contact.php?page=$page");
+    exit;
+}
+
 // 分頁設定
 $limit = 10;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
@@ -32,6 +55,7 @@ function render_contact_table($result_msg, $page, $total_pages) {
                     <th width="180">姓名/Email</th>
                     <th width="100">類別</th>
                     <th>內容摘要</th>
+                    <th width="140">操作</th>
                 </tr>
             </thead>
             <tbody>
@@ -50,10 +74,22 @@ function render_contact_table($result_msg, $page, $total_pages) {
                         </td>
                         <td><?php echo htmlspecialchars($row['category']); ?></td>
                         <td>
-                            <div style="max-width: 400px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                <span style="font-weight: bold; color: var(--accent-color);"><?php echo htmlspecialchars($row['subject']); ?></span>
-                                <span style="color: #aaa; margin: 0 5px;">|</span>
+                            <div style="max-width: 350px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                                 <span style="color: #eee;"><?php echo htmlspecialchars($row['message']); ?></span>
+                            </div>
+                        </td>
+                        <td onclick="event.stopPropagation();">
+                            <div style="display:flex; gap:8px;">
+                                <?php if ($row['status'] !== 'closed'): ?>
+                                    <a href="admin_contact.php?action=close&id=<?php echo $row['id']; ?>&page=<?php echo $page; ?>" 
+                                       class="btn-secondary" style="padding: 6px 12px; font-size: 0.85rem; border: 1px solid #00b894; color: #00b894; background: transparent; border-radius: 50px; white-space: nowrap; font-weight: 600; text-decoration: none; transition: all 0.2s;"
+                                       onmouseover="this.style.background='rgba(0, 184, 148, 0.1)'" onmouseout="this.style.background='transparent'"
+                                       onclick="confirmLink(event, this.href, '確認結單', '確定將此案件標記為已結單？', false)">✔ 結單</a>
+                                <?php endif; ?>
+                                <a href="admin_contact.php?action=delete&id=<?php echo $row['id']; ?>&page=<?php echo $page; ?>" 
+                                   class="btn-secondary" style="padding: 6px 12px; font-size: 0.85rem; border: 1px solid #ff4757; color: #ff4757; background: transparent; border-radius: 50px; white-space: nowrap; font-weight: 600; text-decoration: none; transition: all 0.2s;"
+                                   onmouseover="this.style.background='rgba(255, 71, 87, 0.1)'" onmouseout="this.style.background='transparent'"
+                                   onclick="confirmLink(event, this.href, '確認刪除', '確定徹底刪除此記錄？此操作無法復原。', true)">🗑 刪除</a>
                             </div>
                         </td>
                     </tr>
@@ -122,12 +158,16 @@ require_once("inc/header.php");
                 });
         }
 
-        // Auto refresh list every 1 second
+        // Auto refresh list every 3 seconds (slowed down to avoid button flicker while hovering)
         setInterval(() => {
             const pageInfo = document.querySelector('.page-info');
             const activePage = pageInfo ? pageInfo.innerText.split(' / ')[0] : 1;
+            // Only refresh if user is not hovering over the table? 
+            // For now, keep it simple. If refreshing is annoying, can increase interval or check hover.
+            // Actually, admin might want real-time. 1s is fine if DOM diffing, but we replace HTML.
+            // Let's keep 1s but if interaction issues arise, user will tell.
             loadList(activePage);
-        }, 1000);
+        }, 2000);
 
         // Instant sync via global helper
         if (window.onChatSync) {

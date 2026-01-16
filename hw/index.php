@@ -1,7 +1,6 @@
-<?php require_once('../final/auth_check.php'); ?>
+<?php require_once('../final/inc/auth_guard.php'); ?>
 <!DOCTYPE html>
 <html lang="zh-TW">
-
 <head>
     <meta charset="UTF-8">
     <title>期末報告</title>
@@ -9,7 +8,6 @@
     <link rel="stylesheet" href="css/itemList.css" media="all">
     <link rel="stylesheet" href="css/indexCSS.css" media="all">
 </head>
-
 <body>
     <div id="wrap">
         <header id="header" class="clearheader">
@@ -28,5 +26,4 @@
         </footer>
     </div>
 </body>
-
 </html>

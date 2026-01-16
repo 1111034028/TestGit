@@ -1,4 +1,4 @@
-<?php require_once('../final/auth_check.php'); ?>
+<?php require_once('../final/inc/auth_guard.php'); ?>
 <?php
 require_once("../DB/DB_open.php");
 

@@ -1,0 +1,221 @@
+/* css/dark_common.css - Common Dark Theme Styles & Components */
+
+:root {
+    --bg-dark: #121212;
+    --bg-card: #181818;
+    --bg-hover: #282828;
+    --text-primary: #ffffff;
+    --text-secondary: #b3b3b3;
+    --accent-color: #1db954; /* Green like Spotify */
+    --accent-hover: #1ed760;
+    --border-color: #333;
+    --error-color: #ff4757;
+}
+
+body {
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: 'Circular', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    margin: 0;
+}
+
+/* -----------------------------
+   Buttons
+----------------------------- */
+/* Primary Action (Green) */
+.btn-primary {
+    background-color: transparent;
+    color: var(--accent-color);
+    border: 1px solid transparent;
+    border-radius: 500px;
+    padding: 12px 32px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-color);
+    color: black;
+    transform: scale(1.02);
+    box-shadow: 0 0 15px rgba(29, 185, 84, 0.4);
+}
+
+/* Secondary Action (Ghost/Outline) */
+.btn-secondary {
+    background-color: transparent;
+    border: 1px solid transparent;
+    color: var(--text-secondary);
+    border-radius: 500px;
+    padding: 8px 24px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    color: var(--text-primary);
+    border-color: var(--text-primary);
+    background: rgba(255,255,255,0.1);
+}
+
+/* Submit Block Button (Filled Green) */
+.btn-submit {
+    width: 100%;
+    background: var(--accent-color);
+    color: black;
+    border: none;
+    border-radius: 50px;
+    padding: 15px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-submit:hover {
+    background:var(--accent-hover);
+}
+
+/* Nav Buttons (Icon/Text) */
+.nav-btn-green, .nav-btn-return, .nav-btn-red {
+    border: 1px solid transparent;
+    padding: 6px 18px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    transition: all 0.3s;
+    background: transparent;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.nav-btn-green { color: #1db954 !important; }
+.nav-btn-green:hover { background: #1db954; color: black !important; box-shadow: 0 4px 15px rgba(29, 185, 84, 0.3); }
+
+.nav-btn-return { color: #6c5ce7 !important; }
+.nav-btn-return:hover { background: #6c5ce7; color: white !important; box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3); }
+
+.nav-btn-red { color: #ff4757 !important; }
+.nav-btn-red:hover { background: #ff4757; color: white !important; box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3); }
+
+
+/* -----------------------------
+   Modals
+----------------------------- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    display: none; /* Hidden by default. JS should toggle to flex. */
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.modal-box {
+    background: #181818;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    color: white;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-lg { max-width: 700px; }
+.modal-w-md { max-width: 420px; }
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px; /* Optional separator */
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.modal-header h3, .modal-title {
+    margin: 0;
+    font-size: 1.3rem; 
+    color: white;
+    font-weight: 700;
+}
+
+.close-btn, .modal-close, .modal-close-btn {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 1.5rem;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.close-btn:hover { color: white; }
+
+.modal-body {
+    overflow-y: auto;
+    padding-right: 5px; /* Scrollbar space */
+}
+
+/* -----------------------------
+   Forms
+----------------------------- */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label, .form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: #aaa;
+    font-weight: 600;
+}
+
+.form-group input, 
+.form-group textarea, 
+.form-control,
+input[type="text"], input[type="password"], textarea {
+    width: 100%;
+    background: #282828;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 12px;
+    color: white;
+    outline: none;
+    transition: border-color 0.3s;
+    box-sizing: border-box;
+}
+
+.form-group input:focus, .form-control:focus {
+    border-color: var(--accent-color);
+    background: #333;
+}
+
+.form-group .row {
+    display: flex;
+    gap: 15px;
+}
+
+.form-block {
+    display: block;
+    width: 100%;
+}

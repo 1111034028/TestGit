@@ -104,7 +104,7 @@ if (isset($_GET['ajax_body'])) {
     exit;
 }
 
-$page_title = "客服管理 - " . htmlspecialchars($msg['subject']);
+$page_title = "客服管理 - 通訊";
 $extra_css = '<link rel="stylesheet" href="css/chat.css">';
 require_once("inc/header.php");
 require_once("inc/modal.php");
@@ -114,9 +114,9 @@ require_once("inc/modal.php");
             <div style="display: flex; align-items: center; gap: 15px;">
                 <a href="admin_contact.php" class="btn-secondary" style="padding: 5px 15px;">< 返回</a>
                 <div>
-                    <h3 style="margin:0; font-size: 1.1rem;"><?php echo htmlspecialchars($msg['subject']); ?></h3>
-                    <div style="font-size: 0.9rem; color: var(--accent-color); font-weight: bold; margin-top: 2px;">【<?php echo htmlspecialchars($msg['category']); ?>】</div>
-                    <div style="font-size: 0.85rem; color: #aaa;"><?php echo htmlspecialchars($msg['name']); ?> (<?php echo $msg['email']; ?>)</div>
+                    <h3 style="margin:0; font-size: 1.1rem;">客服對話</h3>
+                    <div style="font-size: 0.9rem; color: var(--accent-color); font-weight: bold; margin-top: 2px;">【<?php echo htmlspecialchars($msg['category'] ?? '一般'); ?>】</div>
+                    <div style="font-size: 0.85rem; color: #aaa;"><?php echo htmlspecialchars($msg['name'] ?? '未知用戶'); ?> (<?php echo htmlspecialchars($msg['email'] ?? ''); ?>)</div>
                 </div>
             </div>
             <div id="admin-actions-area" style="display: flex; gap: 10px;">
@@ -142,7 +142,7 @@ require_once("inc/modal.php");
                 $row_class = $is_admin ? 'user' : 'admin'; 
                 $bubble_class = $is_admin ? 'primary' : 'secondary';
                 $align = $is_admin ? 'flex-end' : 'flex-start';
-                $sender_name = $is_admin ? '我 (管理員)' : htmlspecialchars($msg['name']);
+                $sender_name = $is_admin ? '我 (管理員)' : htmlspecialchars($msg['name'] ?? '用戶');
             ?>
                 <div class="msg-row <?php echo ($is_admin ? 'user' : 'admin'); ?>">
                     <div style="display: flex; flex-direction: column; align-items: <?php echo $align; ?>;">
